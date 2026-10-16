@@ -147,9 +147,83 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png?v=3', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=4', bounds).addTo(map);
 map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
 map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
+
+// ---- Animated decorations. The map art is drawn at 1.6x the map's coordinates, so SVGs use art pixels. ----
+const ART = 1.6;
+const svgNS = 'http://www.w3.org/2000/svg';
+function artOverlay(x0, y0, w, h, inner) {
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', `${x0} ${y0} ${w} ${h}`);
+  svg.innerHTML = inner;
+  const b = [[H - (y0 + h) / ART, x0 / ART], [H - y0 / ART, (x0 + w) / ART]];
+  L.svgOverlay(svg, b, { interactive: false }).addTo(map);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) svg.pauseAnimations();
+  return svg;
+}
+
+// America 250 Wheel: rim and spokes turn, gondolas stay upright.
+(() => {
+  const cx = 2052.7, cy = 1659.3, R = 44, spin = 'dur="30s" repeatCount="indefinite"';
+  const pink = '#a7247b', gondolaTops = '#2a397f', bottoms = ['#cc6628', '#0965a1', '#d1a52c', '#a7247b'];
+  let spokes = '', gondolas = '';
+  for (let i = 0; i < 8; i++) {
+    const a = i * Math.PI / 4, x = (R + 2) * Math.cos(a), y = (R + 2) * Math.sin(a);
+    spokes += `<line x1="0" y1="0" x2="${(R * Math.cos(a)).toFixed(1)}" y2="${(R * Math.sin(a)).toFixed(1)}"/>`;
+    gondolas += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><g>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="-360" ${spin}/>
+      <path d="M-8.3 0A8.3 8.3 0 0 1 8.3 0Z" fill="${gondolaTops}"/>
+      <path d="M-8.3 0A8.3 8.3 0 0 0 8.3 0Z" fill="${bottoms[i % 4]}"/></g></g>`;
+  }
+  artOverlay(cx - 90, cy - 90, 180, 180, `
+    <g transform="translate(${cx} ${cy})">
+      <g stroke="${pink}" stroke-width="2.2" stroke-linecap="round" fill="none">
+        <line x1="0" y1="0" x2="6" y2="62"/><line x1="0" y1="0" x2="46" y2="44"/>
+      </g>
+      <g>
+        <animateTransform attributeName="transform" type="rotate" from="0" to="360" ${spin}/>
+        <g stroke="${pink}" stroke-width="1.8" fill="none">
+          <circle r="${R}"/><circle r="25.5"/>${spokes}
+        </g>
+        ${gondolas}
+      </g>
+      <circle r="9" fill="#cc6628"/><circle r="5" fill="#d1982c"/>
+    </g>`);
+})();
+
+// Fireworks over the pond: staggered bursts that bloom and fade.
+(() => {
+  const bursts = [
+    { x: 800, y: 705, r: 52, c: '#ffd43b', d: 0 },
+    { x: 995, y: 690, r: 60, c: '#ff6bcb', d: 0.9 },
+    { x: 1120, y: 765, r: 46, c: '#66d9ff', d: 1.8 },
+    { x: 745, y: 885, r: 44, c: '#b2f2bb', d: 2.6 },
+    { x: 1060, y: 900, r: 40, c: '#ffffff', d: 3.3 },
+  ];
+  const dur = 3.6;
+  const g = bursts.map(b => {
+    let rays = '';
+    const n = 14;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * 2 * Math.PI + b.d, x = Math.cos(a), y = Math.sin(a);
+      rays += `<line x1="${(x * b.r * .25).toFixed(1)}" y1="${(y * b.r * .25).toFixed(1)}" x2="${(x * b.r * .85).toFixed(1)}" y2="${(y * b.r * .85).toFixed(1)}"/>
+               <circle cx="${(x * b.r).toFixed(1)}" cy="${(y * b.r).toFixed(1)}" r="2.6"/>`;
+    }
+    const t = `begin="${b.d}s" dur="${dur}s" repeatCount="indefinite"`;
+    return `<g transform="translate(${b.x} ${b.y})" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.04;.4;.75;1" ${t}/>
+      <g stroke="${b.c}" fill="${b.c}" stroke-width="2.4" stroke-linecap="round" filter="url(#fw-glow)">
+        <animateTransform attributeName="transform" type="scale" values="0.05;1;1.15;1.15" keyTimes="0;.3;.75;1" ${t}/>
+        ${rays}<circle r="4"/>
+      </g></g>`;
+  }).join('');
+  artOverlay(690, 620, 500, 340, `
+    <defs><filter id="fw-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter></defs>${g}`);
+})();
 
 const lists = document.getElementById('lists');
 let n = 0;
