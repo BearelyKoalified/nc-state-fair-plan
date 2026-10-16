@@ -20,7 +20,8 @@
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
     font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   .app { display: grid; grid-template-columns: 360px 1fr; height: 100vh; height: 100dvh; }
-  aside { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: 20px 18px 28px; }
+  aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  aside .scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px 24px; }
   h1 { font-size: 20px; margin: 0 0 4px; }
   .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
   h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
@@ -44,8 +45,8 @@
   .pin span { transform: rotate(45deg); color: #fff; font-weight: 700; font-size: 13px; }
   .leaflet-popup-content { margin: 10px 14px; font: 14px/1.4 system-ui, sans-serif; }
   .leaflet-popup-content b { font-size: 15px; }
-  .route { background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid var(--line);
-    border-radius: 10px; padding: 4px 12px 10px; margin-bottom: 14px; }
+  .route { flex: none; max-height: 45%; overflow-y: auto; border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--accent) 7%, var(--panel)); padding: 2px 18px 12px; }
   .route-head { display: flex; justify-content: space-between; align-items: center; }
   .route-head h2 { margin: 10px 0 6px; color: var(--text); }
   .route button, .route-list button { font: inherit; cursor: pointer; border: 1px solid var(--line);
@@ -58,7 +59,9 @@
   #route-list li .rt { flex: 1; cursor: pointer; }
   #route-list li .rt small { color: var(--muted); }
   #route-list li button.x { border: 0; background: none; color: var(--muted); font-size: 16px; padding: 0 4px; cursor: pointer; }
-  ul.stops li.inroute .name::after { content: " ✓"; color: var(--accent); }
+  ul.stops li > span:nth-child(2) { flex: 1; min-width: 0; }
+  ul.stops .check { flex: none; width: 16px; text-align: center; color: var(--accent); font-weight: 700; visibility: hidden; }
+  ul.stops li.inroute .check { visibility: visible; }
   .rbadge { background: #fff; color: #000; border: 2px solid #000; border-radius: 50%;
     width: 22px; height: 22px; font: 700 12px/18px system-ui, sans-serif; text-align: center;
     box-shadow: 0 1px 4px rgba(0,0,0,.4); }
@@ -68,24 +71,18 @@
   @media (max-width: 760px) {
     .app { grid-template-columns: 1fr; grid-template-rows: 55dvh 1fr; }
     #map { order: -1; }
-    aside { border-right: 0; border-top: 1px solid var(--line); padding: 16px 16px 24px; }
+    aside { border-right: 0; border-top: 1px solid var(--line); }
+    aside .scroll { padding: 16px 16px 20px; }
+    .route { padding: 2px 16px 12px; }
   }
 </style>
 </head>
 <body>
 <div class="app">
   <aside>
+    <div class="scroll">
     <h1>Elizabeth and Matt's Fair Planner!</h1>
     <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map and add it to your route; tap it again to remove it.</p>
-    <section class="route">
-      <div class="route-head">
-        <h2>Your route</h2>
-        <button id="clear" type="button" hidden>Clear</button>
-      </div>
-      <p id="route-hint" class="where">Tap stops below (or pins on the map); tap one again to remove it. The first one you tap is where you start, and the line follows walkways along the shortest walk through the rest.</p>
-      <label id="order-toggle" class="toggle" hidden><input type="checkbox" id="shortest" checked> Shortest path (off = the order I tapped)</label>
-      <ol id="route-list"></ol>
-    </section>
     <div class="legend">
       <span><i style="background:var(--food)"></i>Food</span>
       <span><i style="background:var(--ride)"></i>Ride</span>
@@ -105,6 +102,16 @@
       Food pins come from the fair's
       <a href="https://www.ncagr.gov/divisions/nc-state-fair/new-fair-foods-map/open">2026 new-foods map</a>
       and are placed by hand, so treat them as close, not exact. Items marked "likely" are a best guess at the vendor.</p>
+    </div>
+    <section class="route">
+      <div class="route-head">
+        <h2>Your route</h2>
+        <button id="clear" type="button" hidden>Clear</button>
+      </div>
+      <p id="route-hint" class="where">Tap stops above (or pins on the map); tap one again to remove it. The first one you tap is where you start, and the line follows walkways along the shortest walk through the rest.</p>
+      <label id="order-toggle" class="toggle" hidden><input type="checkbox" id="shortest" checked> Shortest path (off = the order I tapped)</label>
+      <ol id="route-list"></ol>
+    </section>
   </aside>
   <div id="map"></div>
 </div>
@@ -160,7 +167,7 @@ groups.forEach(g => {
     const li = document.createElement('li');
     li.innerHTML = `<span class="dot" style="background:${c}">${n}</span>
       <span><span class="name">${it.name}</span>${it.likely ? '<span class="tag">likely</span>' : ''}
-      <br><span class="where">${it.where}</span></span>`;
+      <br><span class="where">${it.where}</span></span><span class="check" aria-hidden="true">✓</span>`;
     const e = { id: n, name: it.name, x: it.x, y: it.y, li, m };
     li.onclick = () => select(e, true);
     m.on('click', () => select(e, false));
