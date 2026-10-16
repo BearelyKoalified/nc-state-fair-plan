@@ -278,7 +278,7 @@ const KeyControl = L.Control.extend({
   },
 });
 new KeyControl().addTo(map);
-map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
+map.fitBounds([[H - 1200, 380], [H - 20, 1860]]);   // includes the title sign up top
 map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
 
 // ---- Animated decorations. The map art is drawn at 1.6x the map's coordinates, so SVGs use art pixels. ----
