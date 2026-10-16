@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NC State Fair Plan</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root {
+    --bg: #faf7f2; --panel: #ffffff; --text: #1f1d1a; --muted: #6b655c; --line: #e6e0d6;
+    --food: #d9480f; --ride: #7048e8; --attr: #2b8a3e; --show: #c2255c; --accent: #1c7ed6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17161a; --panel: #212026; --text: #ece9e4; --muted: #a39d94; --line: #34323a;
+      --food: #ff8a4c; --ride: #9775fa; --attr: #51cf66; --show: #f06595; --accent: #4dabf7;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .app { display: grid; grid-template-columns: 360px 1fr; height: 100vh; height: 100dvh; }
+  aside { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: 20px 18px 28px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
+  ul.stops { list-style: none; margin: 0; padding: 0; }
+  ul.stops li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 8px; margin: 0 -8px;
+    border-radius: 8px; cursor: pointer; }
+  ul.stops li:hover, ul.stops li.active { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .dot { flex: none; width: 24px; height: 24px; border-radius: 50%; color: #fff; font-weight: 700;
+    font-size: 12px; display: grid; place-items: center; margin-top: 1px; }
+  .name { font-weight: 600; }
+  .where { color: var(--muted); font-size: 13px; }
+  .tag { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; margin-left: 4px;
+    border: 1px solid var(--line); color: var(--muted); vertical-align: 1px; }
+  ol.order { margin: 0; padding-left: 20px; }
+  ol.order li { margin-bottom: 8px; }
+  .note { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 22px; padding-top: 12px; }
+  .note a { color: var(--accent); }
+  #map { height: 100%; background: #e9efe4; }
+  .pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+    border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); display: grid; place-items: center; }
+  .pin span { transform: rotate(45deg); color: #fff; font-weight: 700; font-size: 13px; }
+  .leaflet-popup-content { margin: 10px 14px; font: 14px/1.4 system-ui, sans-serif; }
+  .leaflet-popup-content b { font-size: 15px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12.5px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: 55dvh 1fr; }
+    #map { order: -1; }
+    aside { border-right: 0; border-top: 1px solid var(--line); padding: 16px 16px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>NC State Fair Plan</h1>
+    <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map.</p>
+    <div class="legend">
+      <span><i style="background:var(--food)"></i>Food</span>
+      <span><i style="background:var(--ride)"></i>Ride</span>
+      <span><i style="background:var(--attr)"></i>Attraction</span>
+      <span><i style="background:var(--show)"></i>Don't miss</span>
+    </div>
+    <div id="lists"></div>
+    <h2>Suggested order</h2>
+    <ol class="order">
+      <li>Start with the exhibit areas: Village of Yesteryear, State Fair Ark, Children's Barnyard, Heritage Circle. They close at 9:45 PM, so do them first.</li>
+      <li>Grab food along the way and at the midway.</li>
+      <li>Ride the America 250 Wheel around 8:30–9 PM for the lit-up view. Buy the ticket early, since the line builds after dark.</li>
+      <li>Stake out a fireworks spot by 9:40 PM. Fireworks are at 9:45 PM over the pond.</li>
+    </ol>
+    <p class="note">Base map: the official 2026 grounds map from the
+      <a href="https://www.ncagr.gov/divisions/nc-state-fair/grounds-map/open">N.C. State Fair</a>.
+      Food pins come from the fair's
+      <a href="https://www.ncagr.gov/divisions/nc-state-fair/new-fair-foods-map/open">2026 new-foods map</a>
+      and are placed by hand, so treat them as close, not exact. Items marked "likely" are a best guess at the vendor.</p>
+  </aside>
+  <div id="map"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const W = 1890, H = 1530;
+const css = getComputedStyle(document.documentElement);
+const color = k => css.getPropertyValue('--' + k).trim();
+
+const groups = [
+  { title: 'Food to try', kind: 'food', items: [
+    { name: 'Pork belly burnt ends', where: 'Fat Boys BBQ, by the Kiddieland Ferris wheel', x: 1319, y: 855 },
+    { name: 'Biscoff Nana Pudding', where: 'Tropical Delights, near the Waterfall / SECU', x: 1135, y: 874 },
+    { name: 'Dubai Burger', where: 'Urban Olive Mediterranean, next to the Scott Bldg.', x: 1448, y: 678 },
+    { name: 'Oxtail empanada', where: 'Kreyol Flavors, near the America 250 Wheel', x: 1344, y: 1018 },
+    { name: 'Pork-and-egg "protein bomb"', where: 'Pioneer Wagon (Scotch egg), by the Graham Building', x: 1130, y: 988, likely: true },
+    { name: 'Dill Devil pickle', where: 'Pickle Bun, beside the Agri Supply Expo Center', x: 1041, y: 920, likely: true },
+  ]},
+  { title: 'Rides', kind: 'ride', items: [
+    { name: 'America 250 Wheel', where: '230-ft Ferris wheel; $7 at gate, ~10 min, gondolas seat 6', x: 1280, y: 1040 },
+  ]},
+  { title: 'Attractions', kind: 'attr', items: [
+    { name: 'Village of Yesteryear', where: 'Wool spinning, pottery, crafters', x: 810, y: 665 },
+    { name: "Children's Barnyard", where: 'Livestock and animal exhibits (FFA)', x: 790, y: 730 },
+    { name: 'State Fair Ark', where: 'Farm animals and cow milking, Agri Supply Expo Center', x: 960, y: 900 },
+    { name: 'Heritage Circle', where: 'Blacksmith and gristmill demos', x: 690, y: 600 },
+  ]},
+  { title: "Don't miss", kind: 'show', items: [
+    { name: 'Fireworks, 9:45 PM', where: 'Nightly over the pond', x: 560, y: 480 },
+  ]},
+];
+
+const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
+  attributionControl: false });
+const bounds = [[0, 0], [H, W]];
+L.imageOverlay('fair-map.png', bounds).addTo(map);
+map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
+map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
+
+const lists = document.getElementById('lists');
+let n = 0;
+const entries = [];
+groups.forEach(g => {
+  const h = document.createElement('h2'); h.textContent = g.title; lists.appendChild(h);
+  const ul = document.createElement('ul'); ul.className = 'stops'; lists.appendChild(ul);
+  g.items.forEach(it => {
+    n++;
+    const c = color(g.kind);
+    const icon = L.divIcon({ className: '', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28],
+      html: `<div class="pin" style="background:${c}"><span>${n}</span></div>` });
+    const m = L.marker([H - it.y, it.x], { icon }).addTo(map)
+      .bindPopup(`<b>${it.name}</b>${it.likely ? ' <span class="tag">likely</span>' : ''}<br>${it.where}`);
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="dot" style="background:${c}">${n}</span>
+      <span><span class="name">${it.name}</span>${it.likely ? '<span class="tag">likely</span>' : ''}
+      <br><span class="where">${it.where}</span></span>`;
+    li.onclick = () => {
+      entries.forEach(e => e.li.classList.remove('active'));
+      li.classList.add('active');
+      map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 0.5), { duration: 0.6 });
+      m.openPopup();
+      if (window.innerWidth <= 760) document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+    };
+    m.on('click', () => { entries.forEach(e => e.li.classList.remove('active')); li.classList.add('active'); });
+    ul.appendChild(li);
+    entries.push({ li, m });
+  });
+});
+</script>
+</body>
+</html>
