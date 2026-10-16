@@ -411,7 +411,7 @@ groups.forEach(g => {
   g.items.forEach(it => {
     n++;
     const c = MATT;
-    const m = L.marker([H - it.y, it.x], { icon: pinIcon(c, 'M') }).addTo(map)
+    const m = L.marker([H - it.y, it.x], { icon: pinIcon(c, 'M') })   // only on the map while selected
       .bindPopup(`<b>${it.name}</b>${it.likely ? ' <span class="tag">likely</span>' : ''}<br>${it.where}<br><small>Matt's interest</small>`);
     const li = document.createElement('li');
     li.innerHTML = `<span class="dot" style="background:${c}">M</span>
@@ -489,6 +489,7 @@ function select(e, fromList) {
   if (picked.includes(e)) { e.li && e.li.classList.remove('active'); e.m && e.m.closePopup(); remove(e); return; }
   picked.push(e);
   if (e.owner === 'eliz' && !e.m) addElizMarker(e);
+  if (e.owner === 'matt') e.m.addTo(map);
   drawRoute();
   focus(e, fromList);
 }
@@ -505,7 +506,8 @@ function focus(e, fly) {
 
 function remove(e) {
   picked.splice(picked.indexOf(e), 1);
-  if (e.owner === 'eliz' && e.m) { e.m.remove(); e.m = null; }   // Elizabeth's picks only show while selected
+  if (e.owner === 'eliz' && e.m) { e.m.remove(); e.m = null; }   // picks only show on the map while selected
+  if (e.owner === 'matt') e.m.remove();
   unhighlight(e);
   drawRoute();
   renderResults();
