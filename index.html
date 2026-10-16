@@ -161,7 +161,7 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png?v=5', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=6', bounds).addTo(map);
 
 // ---- Map key: each kind of icon is its own layer that can be shown or hidden ----
 const KEY = [
@@ -248,6 +248,39 @@ function artOverlay(x0, y0, w, h, inner) {
       </g>
       <circle r="9" fill="#cc6628"/><circle r="5" fill="#d1982c"/>
     </g>`);
+})();
+
+// Animals: each one is cut out of the map art and given its own little loop.
+(() => {
+  const A = {
+    pig:        { box: [1472,1528,1534,1572], pivot: [1502,1568], anim: 'trot' },
+    cow:        { box: [1478,1476,1564,1546], pivot: [1522,1543], anim: 'graze' },
+    goat:       { box: [1548,1466,1618,1538], pivot: [1585,1532], anim: 'hop' },
+    horse:      { box: [452,542,562,638],     pivot: [505,633],   anim: 'prance' },
+    graham_cow: { box: [1676,1594,1784,1672], pivot: [1730,1668], anim: 'graze', delay: 1.7 },
+    chicken:    { box: [1842,1756,1908,1826], pivot: [1880,1820], anim: 'peck' },
+    bear:       { box: [874,906,948,1028],    pivot: [911,1022],  anim: 'wave' },
+    cardinal:   { box: [2246,1398,2302,1516], pivot: [2274,1511], anim: 'bob' },
+  };
+  const loops = {   // [transform type, values, keyTimes, duration]
+    graze:  ['rotate', '0;-2.5;0;2;0', '0;.25;.5;.75;1', 6],
+    trot:   ['translate', '0 0;3 -3;6 0;3 -3;0 0;0 0', '0;.1;.2;.3;.4;1', 2.6],
+    hop:    ['translate', '0 0;0 0;0 -12;0 0;0 -6;0 0;0 0', '0;.6;.68;.76;.82;.88;1', 3.2],
+    prance: ['rotate', '0;0;-9;0;-5;0;0', '0;.55;.65;.75;.82;.9;1', 3.6],
+    peck:   ['rotate', '0;0;20;0;20;0;0', '0;.45;.53;.61;.69;.77;1', 2.4],
+    wave:   ['rotate', '-3;3;-3', '0;.5;1', 2.2],
+    bob:    ['translate', '0 0;0 -5;0 0', '0;.5;1', 1.3],
+  };
+  Object.entries(A).forEach(([name, a]) => {
+    const [x0, y0, x1, y1] = a.box, pad = 16, [px, py] = a.pivot;
+    const [type, values, keyTimes, dur] = loops[a.anim];
+    const vals = type === 'rotate' ? values.split(';').map(v => `${v} ${px} ${py}`).join(';') : values;
+    artOverlay(x0 - pad, y0 - pad, x1 - x0 + 2 * pad, y1 - y0 + 2 * pad, `
+      <g><animateTransform attributeName="transform" type="${type}" values="${vals}" keyTimes="${keyTimes}"
+           dur="${dur}s" begin="${a.delay || 0}s" repeatCount="indefinite" calcMode="spline"
+           keySplines="${Array(keyTimes.split(';').length - 1).fill('.45 0 .55 1').join(';')}"/>
+        <image href="animals/${name}.png?v=1" x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"/></g>`);
+  });
 })();
 
 // Fireworks over the pond: staggered bursts that bloom and fade.
