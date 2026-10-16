@@ -38,7 +38,7 @@
   ol.order li { margin-bottom: 8px; }
   .note { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 22px; padding-top: 12px; }
   .note a { color: var(--accent); }
-  #map { height: 100%; background: #e9efe4; }
+  #map { height: 100%; background: #242f3e; }
   .pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
     border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); display: grid; place-items: center; }
   .pin span { transform: rotate(45deg); color: #fff; font-weight: 700; font-size: 13px; }
@@ -59,7 +59,7 @@
   #route-list li .rt small { color: var(--muted); }
   #route-list li button.x { border: 0; background: none; color: var(--muted); font-size: 16px; padding: 0 4px; cursor: pointer; }
   ul.stops li.inroute .name::after { content: " ✓"; color: var(--accent); }
-  .rbadge { background: #000; color: #fff; border: 2px solid #fff; border-radius: 50%;
+  .rbadge { background: #fff; color: #000; border: 2px solid #000; border-radius: 50%;
     width: 22px; height: 22px; font: 700 12px/18px system-ui, sans-serif; text-align: center;
     box-shadow: 0 1px 4px rgba(0,0,0,.4); }
   .rbadge.start, #route-list li .rn.start { background: #ffd43b; color: #000; }
@@ -82,7 +82,7 @@
         <h2>Your route</h2>
         <button id="clear" type="button" hidden>Clear</button>
       </div>
-      <p id="route-hint" class="where">Tap stops below (or pins on the map). The first one you tap is where you start, and the line takes the shortest path through the rest.</p>
+      <p id="route-hint" class="where">Tap stops below (or pins on the map). The first one you tap is where you start, and the line follows walkways along the shortest walk through the rest.</p>
       <label id="order-toggle" class="toggle" hidden><input type="checkbox" id="shortest" checked> Shortest path (off = the order I tapped)</label>
       <ol id="route-list"></ol>
     </section>
@@ -101,7 +101,7 @@
       <li>Stake out a fireworks spot by 9:40 PM. Fireworks are at 9:45 PM over the pond.</li>
     </ol>
     <p class="note">Base map: the official 2026 grounds map from the
-      <a href="https://www.ncagr.gov/divisions/nc-state-fair/grounds-map/open">N.C. State Fair</a>.
+      <a href="https://www.ncagr.gov/divisions/nc-state-fair/grounds-map/open">N.C. State Fair</a>, recolored for dark mode. Route lines follow walkways and grass, so walking times are estimates.
       Food pins come from the fair's
       <a href="https://www.ncagr.gov/divisions/nc-state-fair/new-fair-foods-map/open">2026 new-foods map</a>
       and are placed by hand, so treat them as close, not exact. Items marked "likely" are a best guess at the vendor.</p>
@@ -140,7 +140,7 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map.png', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png', bounds).addTo(map);
 map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
 map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
 
@@ -169,7 +169,7 @@ groups.forEach(g => {
   });
 });
 
-// ---- Route: tapped stops, first one is the start, line takes the shortest path through the rest ----
+// ---- Route: tapped stops, first one is the start, line takes the shortest walk through the rest ----
 const picked = [];                       // entries in the order they were tapped
 const routeLayer = L.layerGroup().addTo(map);
 const routeList = document.getElementById('route-list');
@@ -192,7 +192,16 @@ function remove(e) {
   drawRoute();
 }
 
-const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+// Walking distances and paths between every pair of stops, precomputed along walkways and grass.
+let WALK = null;
+fetch('paths.json').then(r => r.json()).then(j => { WALK = j; drawRoute(); }).catch(() => {});
+const dist = (a, b) => WALK ? WALK.dist[a.id - 1][b.id - 1] : Math.hypot(a.x - b.x, a.y - b.y);
+function leg(a, b) {                     // points from a to b, following paths when available
+  const i = a.id - 1, j = b.id - 1;
+  let pts = WALK && WALK.paths[i < j ? `${i}-${j}` : `${j}-${i}`];
+  pts = pts ? (i < j ? pts : pts.slice().reverse()) : [];
+  return [[a.x, a.y], ...pts, [b.x, b.y]].map(([x, y]) => L.latLng(H - y, x));
+}
 
 // Exact shortest open path that starts at pts[0] and visits every point (Held-Karp; fine for 12 stops).
 function shortestOrder(pts) {
@@ -224,9 +233,11 @@ function drawRoute() {
   entries.forEach(x => x.li.classList.toggle('inroute', picked.includes(x)));
   const route = shortestBox.checked ? shortestOrder(picked) : picked.slice();
   const ll = route.map(e => L.latLng(H - e.y, e.x));
-  if (ll.length > 1) {
-    L.polyline(ll, { color: '#fff', weight: 10, opacity: .95 }).addTo(routeLayer);
-    L.polyline(ll, { color: '#000', weight: 5 }).addTo(routeLayer);
+  const line = [];
+  for (let i = 1; i < route.length; i++) line.push(...leg(route[i - 1], route[i]));
+  if (line.length) {
+    L.polyline(line, { color: '#000', weight: 10, opacity: .9, lineJoin: 'round' }).addTo(routeLayer);
+    L.polyline(line, { color: '#fff', weight: 5, lineJoin: 'round' }).addTo(routeLayer);
   }
   route.forEach((e, i) => {
     L.marker(ll[i], { interactive: false, zIndexOffset: 1000, icon: L.divIcon({ className: '',
