@@ -115,6 +115,12 @@
   @keyframes hl { from { transform: scale(.25); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .hl-ring::before { animation: none; transform: scale(.8); } .hl-ring::after { display: none; } }
   .pin.hover { transform: rotate(-45deg) scale(1.35); transition: transform .15s; }
+  .route-toggle { all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .route-toggle .chev { color: var(--muted); font-size: 12px; transition: transform .15s; }
+  .route-toggle[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+  #route-count { color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .route.collapsed #route-hint, .route.collapsed #order-toggle, .route.collapsed #route-list { display: none !important; }
+  .route.collapsed { padding-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -151,7 +157,7 @@
     </div>
     <section class="route">
       <div class="route-head">
-        <h2>Your route</h2>
+        <button type="button" id="route-toggle" class="route-toggle" aria-expanded="true"><span class="chev">▾</span><h2>Your route <span id="route-count"></span></h2></button>
         <button id="clear" type="button" hidden>Clear</button>
       </div>
       <p id="route-hint" class="where">Tap stops above (or pins on the map); tap one again to remove it. The first one you tap is where you start, and the line follows walkways along the shortest walk through the rest.</p>
@@ -473,7 +479,7 @@ function cellOf(e) {                     // nearest walkable cell to a stop
 const trees = new Map();                 // shortest-path tree from each stop's cell
 function tree(src) {
   if (trees.has(src)) return trees.get(src);
-  const N = GW * GH, dist = new Float32Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1);
+  const N = GW * GH, dist = new Float64Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1);
   const hi = [], hk = [];                // binary heap of (key, index)
   const push = (k, i) => { let c = hk.length; hk.push(k); hi.push(i);
     while (c > 0) { const p = (c - 1) >> 1; if (hk[p] <= hk[c]) break; [hk[p], hk[c]] = [hk[c], hk[p]]; [hi[p], hi[c]] = [hi[c], hi[p]]; c = p; } };
@@ -589,6 +595,7 @@ function drawRoute() {
     hoverable(li, e);
     routeList.appendChild(li);
   });
+  document.getElementById('route-count').textContent = picked.length ? `· ${picked.length} stop${picked.length > 1 ? 's' : ''}` : '';
   document.getElementById('clear').hidden = picked.length === 0;
   document.getElementById('order-toggle').hidden = picked.length < 3;
   document.getElementById('route-hint').hidden = picked.length > 1;
@@ -641,6 +648,14 @@ function renderResults() {
   if (hits.length > shown.length) resultsEl.insertAdjacentHTML('beforeend', `<li class="more">${hits.length - shown.length} more — keep typing to narrow it down</li>`);
   if (!hits.length) resultsEl.innerHTML = '<li class="more">No matches</li>';
 }
+
+// ---- "Your route" panel folds away (collapsed by default on phones) ----
+(() => {
+  const panel = document.querySelector('.route'), btn = document.getElementById('route-toggle');
+  const set = c => { panel.classList.toggle('collapsed', c); btn.setAttribute('aria-expanded', String(!c)); };
+  set(window.innerWidth <= 760);
+  btn.onclick = () => set(!panel.classList.contains('collapsed'));
+})();
 </script>
 </body>
 </html>
