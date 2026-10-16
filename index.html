@@ -76,13 +76,13 @@
 <div class="app">
   <aside>
     <h1>Elizabeth and Matt's Fair Planner!</h1>
-    <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map and add it to your route.</p>
+    <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map and add it to your route; tap it again to remove it.</p>
     <section class="route">
       <div class="route-head">
         <h2>Your route</h2>
         <button id="clear" type="button" hidden>Clear</button>
       </div>
-      <p id="route-hint" class="where">Tap stops below (or pins on the map). The first one you tap is where you start, and the line follows walkways along the shortest walk through the rest.</p>
+      <p id="route-hint" class="where">Tap stops below (or pins on the map); tap one again to remove it. The first one you tap is where you start, and the line follows walkways along the shortest walk through the rest.</p>
       <label id="order-toggle" class="toggle" hidden><input type="checkbox" id="shortest" checked> Shortest path (off = the order I tapped)</label>
       <ol id="route-list"></ol>
     </section>
@@ -175,12 +175,18 @@ const routeLayer = L.layerGroup().addTo(map);
 const routeList = document.getElementById('route-list');
 const shortestBox = document.getElementById('shortest');
 
+// Tapping a stop adds it to the route; tapping it again takes it back out.
 function select(e, fromList) {
+  if (picked.includes(e)) { e.li.classList.remove('active'); e.m.closePopup(); remove(e); return; }
+  picked.push(e);
+  drawRoute();
+  focus(e, fromList);
+}
+
+function focus(e, fly) {
   entries.forEach(x => x.li.classList.remove('active'));
   e.li.classList.add('active');
-  if (!picked.includes(e)) picked.push(e);
-  drawRoute();
-  if (fromList) {
+  if (fly) {
     map.flyTo(e.m.getLatLng(), Math.max(map.getZoom(), 0.5), { duration: 0.6 });
     if (window.innerWidth <= 760) document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
   }
@@ -251,7 +257,7 @@ function drawRoute() {
     li.innerHTML = `<span class="rn${i === 0 ? ' start' : ''}">${i === 0 ? '★' : i + 1}</span>
       <span class="rt">${e.name}${i === 0 ? ' <small>(start)</small>' : ''}</span>
       <button class="x" type="button" aria-label="Remove ${e.name}">×</button>`;
-    li.querySelector('.rt').onclick = () => select(e, true);
+    li.querySelector('.rt').onclick = () => focus(e, true);
     li.querySelector('.x').onclick = () => remove(e);
     routeList.appendChild(li);
   });
