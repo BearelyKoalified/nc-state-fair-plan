@@ -149,6 +149,9 @@
   @media (max-width: 760px) { .nav-toggle { display: flex; } }
   .nav-toggle .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line); }
   .nav-toggle .what { color: var(--accent); font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .mapkey .mk-sec { color: #a3acb9; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 8px 4px 2px; }
+  .mapkey .mk-dot { width: 14px; height: 14px; border-radius: 50%; margin: 0 5px; flex: none; border: 1px solid #10131a; }
+  .mapkey input:not(:checked) + .mk-dot { opacity: .35; }
 </style>
 </head>
 <body>
@@ -255,6 +258,15 @@ function setIcon(id, on) {
   on ? hidden.delete(id) : hidden.add(id);
   try { localStorage.setItem('hiddenIcons', JSON.stringify([...hidden])); } catch (e) {}
 }
+// place-dot categories (the "Find more places" dots) can be hidden from the key too
+const DOT_CATS = [['Attractions', '#fcc419'], ['New foods', '#ff922b'], ['Services', '#63e6be'], ['Places', '#dee2e6'], ['Gates', '#b197fc']];
+let hiddenCats = new Set();
+try { hiddenCats = new Set(JSON.parse(localStorage.getItem('hiddenDotCats') || '[]')); } catch (e) {}
+function setCat(c, on) {
+  on ? hiddenCats.delete(c) : hiddenCats.add(c);
+  try { localStorage.setItem('hiddenDotCats', JSON.stringify([...hiddenCats])); } catch (e) {}
+  if (typeof updateDots === 'function') updateDots();
+}
 const KeyControl = L.Control.extend({
   options: { position: 'topright' },
   onAdd() {
@@ -264,15 +276,23 @@ const KeyControl = L.Control.extend({
         <div class="mk-actions"><button type="button" data-all="1">Show all</button><button type="button" data-all="0">Hide all</button></div>
       </div>
       <div class="mk-body" hidden>
+        <div class="mk-sec">Places on the map (dots)</div>
+        ${DOT_CATS.map(([c, col]) => `<label><input type="checkbox" data-cat="${c}"${hiddenCats.has(c) ? '' : ' checked'}>
+          <span class="mk-dot" style="background:${col}"></span>${c}</label>`).join('')}
+        <div class="mk-sec">Map icons</div>
         ${KEY.map(([id, label]) => `<label><input type="checkbox" data-id="${id}"${hidden.has(id) ? '' : ' checked'}>
           <img src="key/${id}.png" alt="">${label}</label>`).join('')}
       </div>`;
     const head = box.querySelector('.mk-head'), body = box.querySelector('.mk-body');
     head.onclick = () => { body.hidden = !body.hidden; head.setAttribute('aria-expanded', !body.hidden); };
     box.querySelectorAll('input[data-id]').forEach(cb => cb.onchange = () => setIcon(cb.dataset.id, cb.checked));
-    box.querySelectorAll('[data-all]').forEach(b => b.onclick = () => box.querySelectorAll('input[data-id]').forEach(cb => {
-      cb.checked = b.dataset.all === '1'; setIcon(cb.dataset.id, cb.checked);
-    }));
+    box.querySelectorAll('input[data-cat]').forEach(cb => cb.onchange = () => setCat(cb.dataset.cat, cb.checked));
+    box.querySelectorAll('[data-all]').forEach(b => b.onclick = () => {
+      const on = b.dataset.all === '1';
+      box.querySelectorAll('input[data-id]').forEach(cb => { cb.checked = on; setIcon(cb.dataset.id, on); });
+      box.querySelectorAll('input[data-cat]').forEach(cb => { cb.checked = on; on ? hiddenCats.delete(cb.dataset.cat) : hiddenCats.add(cb.dataset.cat); });
+      setCat('', true);
+    });
     L.DomEvent.disableClickPropagation(box); L.DomEvent.disableScrollPropagation(box);
     return box;
   },
@@ -840,7 +860,8 @@ function updateDots() {
   // dots grow with zoom: pin-pricks when zoomed out, full size once names show
   const t = Math.max(0, Math.min(1, (z - steps.dots) / (steps.labels + 0.75 - steps.dots)));
   const base = searching ? { r: 6, op: 0.95 } : { r: 1.4 + t * 3.1, op: 0.4 + t * 0.45 };
-  const list = (searching ? placeMatches() : PLACES).filter(p => !picked.includes(p));   // selected places have a pin
+  // selected places have a pin; categories switched off in the map key are hidden unless you search for them
+  const list = (searching ? placeMatches() : PLACES.filter(p => !hiddenCats.has(p.group))).filter(p => !picked.includes(p));
   // greedy label placement in screen space: higher-priority groups first, skip any name that would overlap
   const named = new Set();
   if (labels) {
