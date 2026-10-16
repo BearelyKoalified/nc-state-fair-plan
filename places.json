@@ -1,0 +1,1423 @@
+[
+{
+"name": "8. Mobile Dairy Classroom",
+"group": "Attractions",
+"x": 1020.5,
+"y": 940.1,
+"sub": ""
+},
+{
+"name": "13. Tractor Pull / Demolition Derby",
+"group": "Attractions",
+"x": 1050.0,
+"y": 759.3,
+"sub": ""
+},
+{
+"name": "9. Livestock Shows",
+"group": "Attractions",
+"x": 1060.6,
+"y": 1063.3,
+"sub": ""
+},
+{
+"name": "10. Apprenticeship Tent / Poultry Tent",
+"group": "Attractions",
+"x": 1140.5,
+"y": 1141.8,
+"sub": ""
+},
+{
+"name": "18. Fire Safety Show",
+"group": "Attractions",
+"x": 1542.5,
+"y": 762.8,
+"sub": ""
+},
+{
+"name": "21. Andy Rotz - Wild West Showdown",
+"group": "Attractions",
+"x": 1408.3,
+"y": 532.9,
+"sub": ""
+},
+{
+"name": "2. N.C. Forest Service, N.C. Soil & Water Conservation, NC Stillhouse & The Birdman: World Class Bird Show",
+"group": "Attractions",
+"x": 525.2,
+"y": 668.3,
+"sub": ""
+},
+{
+"name": "17. Cotton Park Family Fun Zone, Casey's Clubhouse & Dancing Light Show",
+"group": "Attractions",
+"x": 1358.6,
+"y": 926.2,
+"sub": ""
+},
+{
+"name": "15. Got to Be NC Agriculture Pavilion & NC Public House",
+"group": "Attractions",
+"x": 1235.9,
+"y": 912.8,
+"sub": ""
+},
+{
+"name": "14. The Red Trouser Show",
+"group": "Attractions",
+"x": 1190.1,
+"y": 853.7,
+"sub": ""
+},
+{
+"name": "4. Heritage Church & Folk Festival",
+"group": "Attractions",
+"x": 760.3,
+"y": 597.0,
+"sub": ""
+},
+{
+"name": "7. Livestock Shows, Giant Pumpkins, Horticulture, Bees & Honey, State Fair Ark & Americana 250 Band Organ",
+"group": "Attractions",
+"x": 980.8,
+"y": 876.4,
+"sub": ""
+},
+{
+"name": "5. Flower & Garden Show, Butterfly Barn & JBC Pumpkin Carving",
+"group": "Attractions",
+"x": 699.6,
+"y": 749.7,
+"sub": ""
+},
+{
+"name": "6. Event Tent (Private Events)",
+"group": "Attractions",
+"x": 630.1,
+"y": 801.6,
+"sub": ""
+},
+{
+"name": "12. Strolling Piano",
+"group": "Attractions",
+"x": 1039.7,
+"y": 889.9,
+"sub": ""
+},
+{
+"name": "1. Hunt Horse Complex",
+"group": "Attractions",
+"x": 319.4,
+"y": 419.8,
+"sub": ""
+},
+{
+"name": "11. Live and Local Music Stage",
+"group": "Attractions",
+"x": 1150.4,
+"y": 945.4,
+"sub": ""
+},
+{
+"name": "20. The One Man Band",
+"group": "Attractions",
+"x": 1512.0,
+"y": 688.5,
+"sub": ""
+},
+{
+"name": "19. Conjurer Fortune Machine",
+"group": "Attractions",
+"x": 1462.9,
+"y": 716.5,
+"sub": ""
+},
+{
+"name": "16. Field of Dreams",
+"group": "Attractions",
+"x": 1344.9,
+"y": 977.5,
+"sub": ""
+},
+{
+"name": "3. Heritage Circle, Cast in Bronze & Wine-Mead-Cider Garden",
+"group": "Attractions",
+"x": 639.4,
+"y": 645.0,
+"sub": ""
+},
+{
+"name": "22. SECU Family Picnic Area",
+"group": "Attractions",
+"x": 1117.1,
+"y": 855.0,
+"sub": ""
+},
+{
+"name": "Martin Bldg.",
+"group": "Places",
+"x": 1053.4,
+"y": 514.1,
+"sub": ""
+},
+{
+"name": "Scott Bldg.",
+"group": "Places",
+"x": 1486.9,
+"y": 631.7,
+"sub": ""
+},
+{
+"name": "Admin. Bldg.",
+"group": "Places",
+"x": 1591.7,
+"y": 741.8,
+"sub": ""
+},
+{
+"name": "Commercial Bldg.",
+"group": "Places",
+"x": 1593.1,
+"y": 801.0,
+"sub": ""
+},
+{
+"name": "Education Bldg.",
+"group": "Places",
+"x": 1474.2,
+"y": 857.4,
+"sub": ""
+},
+{
+"name": "Graham Building",
+"group": "Places",
+"x": 1104.8,
+"y": 1071.2,
+"sub": ""
+},
+{
+"name": "Agri Supply Expo Center",
+"group": "Places",
+"x": 942.4,
+"y": 900.8,
+"sub": ""
+},
+{
+"name": "Food Hall",
+"group": "Places",
+"x": 1230.6,
+"y": 798.3,
+"sub": ""
+},
+{
+"name": "Grandstand",
+"group": "Places",
+"x": 1120.6,
+"y": 742.9,
+"sub": ""
+},
+{
+"name": "Kiddieland",
+"group": "Places",
+"x": 1435.3,
+"y": 808.3,
+"sub": ""
+},
+{
+"name": "Village of Yesteryear",
+"group": "Places",
+"x": 810.4,
+"y": 651.6,
+"sub": ""
+},
+{
+"name": "Pitzer Heritage Circle",
+"group": "Places",
+"x": 698.3,
+"y": 587.5,
+"sub": ""
+},
+{
+"name": "Waterfall",
+"group": "Places",
+"x": 1138.7,
+"y": 873.3,
+"sub": ""
+},
+{
+"name": "Casey's Big Slide",
+"group": "Places",
+"x": 902.1,
+"y": 776.9,
+"sub": ""
+},
+{
+"name": "The Marketplace",
+"group": "Places",
+"x": 954.7,
+"y": 710.1,
+"sub": ""
+},
+{
+"name": "Poultry Tent",
+"group": "Places",
+"x": 1189.5,
+"y": 1148.3,
+"sub": ""
+},
+{
+"name": "Apprenticeship Tent",
+"group": "Places",
+"x": 1122.8,
+"y": 1191.4,
+"sub": ""
+},
+{
+"name": "Grist Mill",
+"group": "Places",
+"x": 676.8,
+"y": 528.7,
+"sub": ""
+},
+{
+"name": "Sawmill",
+"group": "Places",
+"x": 485.6,
+"y": 594.7,
+"sub": ""
+},
+{
+"name": "Antique Tractors",
+"group": "Places",
+"x": 833.6,
+"y": 583.6,
+"sub": ""
+},
+{
+"name": "Antique Farm Machinery",
+"group": "Places",
+"x": 849.4,
+"y": 759.4,
+"sub": ""
+},
+{
+"name": "FFA Children's Barnyard",
+"group": "Places",
+"x": 787.6,
+"y": 741.4,
+"sub": ""
+},
+{
+"name": "Wilbur Terminus (Sky Flyer)",
+"group": "Places",
+"x": 883.8,
+"y": 541.3,
+"sub": ""
+},
+{
+"name": "Orville Terminus (Sky Flyer)",
+"group": "Places",
+"x": 1351.1,
+"y": 724.6,
+"sub": ""
+},
+{
+"name": "America 250 Wheel",
+"group": "Places",
+"x": 1225.7,
+"y": 1061.2,
+"sub": ""
+},
+{
+"name": "Restricted Livestock Area",
+"group": "Places",
+"x": 861.3,
+"y": 1073.7,
+"sub": ""
+},
+{
+"name": "Group Bus, Ride Share & Taxi Zone",
+"group": "Places",
+"x": 1519.7,
+"y": 910.9,
+"sub": ""
+},
+{
+"name": "Water Tower",
+"group": "Places",
+"x": 1655.2,
+"y": 539.0,
+"sub": ""
+},
+{
+"name": "Pond (fireworks)",
+"group": "Places",
+"x": 571.9,
+"y": 515.5,
+"sub": ""
+},
+{
+"name": "Midway rides",
+"group": "Places",
+"x": 1109.9,
+"y": 647.5,
+"sub": ""
+},
+{
+"name": "Midway rides",
+"group": "Places",
+"x": 1013.6,
+"y": 608.3,
+"sub": ""
+},
+{
+"name": "Midway rides",
+"group": "Places",
+"x": 813.5,
+"y": 911.5,
+"sub": ""
+},
+{
+"name": "Midway rides",
+"group": "Places",
+"x": 1354.4,
+"y": 539.0,
+"sub": ""
+},
+{
+"name": "Gate 10",
+"group": "Gates",
+"x": 1372.5,
+"y": 459.3,
+"sub": ""
+},
+{
+"name": "Gate 11",
+"group": "Gates",
+"x": 1470.3,
+"y": 466.8,
+"sub": ""
+},
+{
+"name": "Gate 12",
+"group": "Gates",
+"x": 1585.8,
+"y": 852.3,
+"sub": ""
+},
+{
+"name": "Gate 1",
+"group": "Gates",
+"x": 1424.0,
+"y": 979.6,
+"sub": ""
+},
+{
+"name": "Gate 3",
+"group": "Gates",
+"x": 1232.6,
+"y": 1104.2,
+"sub": ""
+},
+{
+"name": "Gate 6",
+"group": "Gates",
+"x": 500.7,
+"y": 789.5,
+"sub": ""
+},
+{
+"name": "Gate 9",
+"group": "Gates",
+"x": 1124.0,
+"y": 441.3,
+"sub": ""
+},
+{
+"name": "Gate 8",
+"group": "Gates",
+"x": 456.0,
+"y": 376.0,
+"sub": ""
+},
+{
+"name": "Gate 7",
+"group": "Gates",
+"x": 419.7,
+"y": 622.8,
+"sub": ""
+},
+{
+"name": "Gate 2",
+"group": "Gates",
+"x": 1383.7,
+"y": 1037.2,
+"sub": ""
+},
+{
+"name": "Gate 5",
+"group": "Gates",
+"x": 585.7,
+"y": 886.9,
+"sub": ""
+},
+{
+"name": "Gate 4",
+"group": "Gates",
+"x": 725.3,
+"y": 1046.0,
+"sub": ""
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1155.5,
+"y": 898.6,
+"sub": "near Waterfall"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1045.0,
+"y": 972.0,
+"sub": "near Mobile Dairy Classroom"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1130.4,
+"y": 814.2,
+"sub": "near SECU Family Picnic Area"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1432.7,
+"y": 858.4,
+"sub": "near Education Bldg."
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1465.7,
+"y": 645.7,
+"sub": "near Scott Bldg."
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1016.1,
+"y": 543.7,
+"sub": "near Martin Bldg."
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 870.9,
+"y": 667.4,
+"sub": "near Village of Yesteryear"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1031.9,
+"y": 1011.3,
+"sub": "near Livestock Shows"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1539.2,
+"y": 798.7,
+"sub": "near Fire Safety Show"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1506.0,
+"y": 623.3,
+"sub": "near Scott Bldg."
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1122.8,
+"y": 484.1,
+"sub": "near Gate 9"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1295.7,
+"y": 889.5,
+"sub": "near Got to Be NC Agriculture Pavilion & NC Public House"
+},
+{
+"name": "Wheelchair & stroller rental",
+"group": "Services",
+"x": 1387.5,
+"y": 507.4,
+"sub": "near Andy Rotz - Wild West Showdown"
+},
+{
+"name": "Wheelchair & stroller rental",
+"group": "Services",
+"x": 1154.7,
+"y": 482.1,
+"sub": "near Gate 9"
+},
+{
+"name": "Wheelchair & stroller rental",
+"group": "Services",
+"x": 497.6,
+"y": 390.0,
+"sub": "near Gate 8"
+},
+{
+"name": "Wheelchair & stroller rental",
+"group": "Services",
+"x": 458.1,
+"y": 614.7,
+"sub": "near Sawmill"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 758.0,
+"y": 546.8,
+"sub": "near Heritage Church & Folk Festival"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 631.0,
+"y": 684.7,
+"sub": "near Heritage Circle"
+},
+{
+"name": "Wheelchair & stroller rental",
+"group": "Services",
+"x": 1390.5,
+"y": 979.6,
+"sub": "near Gate 1"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1470.5,
+"y": 749.5,
+"sub": "near Conjurer Fortune Machine"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1135.4,
+"y": 619.7,
+"sub": "near Midway rides"
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 1268.4,
+"y": 843.3,
+"sub": "near Food Hall"
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 1044.4,
+"y": 554.7,
+"sub": "near Martin Bldg."
+},
+{
+"name": "Tram ticket booth",
+"group": "Services",
+"x": 1208.2,
+"y": 678.2,
+"sub": "near Midway rides"
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 823.0,
+"y": 701.1,
+"sub": "near Village of Yesteryear"
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 697.4,
+"y": 635.6,
+"sub": "near Pitzer Heritage Circle"
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 1403.2,
+"y": 745.8,
+"sub": "near Orville Terminus"
+},
+{
+"name": "Tram ticket booth",
+"group": "Services",
+"x": 806.4,
+"y": 536.7,
+"sub": "near Antique Tractors"
+},
+{
+"name": "Music",
+"group": "Services",
+"x": 733.1,
+"y": 582.0,
+"sub": "near Heritage Church & Folk Festival"
+},
+{
+"name": "Tram ticket booth",
+"group": "Services",
+"x": 1251.5,
+"y": 817.7,
+"sub": "near Food Hall"
+},
+{
+"name": "Tram ticket booth",
+"group": "Services",
+"x": 1464.5,
+"y": 888.7,
+"sub": "near Education Bldg."
+},
+{
+"name": "Ride ticket redemption",
+"group": "Services",
+"x": 1259.8,
+"y": 542.6,
+"sub": "near Midway rides"
+},
+{
+"name": "Ride ticket redemption",
+"group": "Services",
+"x": 466.4,
+"y": 642.7,
+"sub": "near Gate 7"
+},
+{
+"name": "Ride ticket redemption",
+"group": "Services",
+"x": 744.9,
+"y": 453.0,
+"sub": "near Grist Mill"
+},
+{
+"name": "Ride ticket redemption",
+"group": "Services",
+"x": 1242.2,
+"y": 854.3,
+"sub": "near The Red Trouser Show"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 958.9,
+"y": 849.5,
+"sub": "near Livestock Shows"
+},
+{
+"name": "First aid",
+"group": "Services",
+"x": 994.1,
+"y": 834.4,
+"sub": "near Livestock Shows"
+},
+{
+"name": "First aid",
+"group": "Services",
+"x": 848.3,
+"y": 630.8,
+"sub": "near Village of Yesteryear"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 445.1,
+"y": 334.8,
+"sub": "near Gate 8"
+},
+{
+"name": "First aid",
+"group": "Services",
+"x": 1384.3,
+"y": 792.7,
+"sub": "near Kiddieland"
+},
+{
+"name": "First aid",
+"group": "Services",
+"x": 1002.5,
+"y": 504.7,
+"sub": "near Martin Bldg."
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 1013.2,
+"y": 859.4,
+"sub": "near Livestock Shows"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 1463.8,
+"y": 982.1,
+"sub": "near Gate 1"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 1411.8,
+"y": 479.9,
+"sub": "near Gate 10"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 1082.9,
+"y": 449.8,
+"sub": "near Gate 9"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 1271.2,
+"y": 1100.6,
+"sub": "near Gate 3"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 493.4,
+"y": 828.4,
+"sub": "near Gate 6"
+},
+{
+"name": "Ticket booth",
+"group": "Services",
+"x": 423.5,
+"y": 663.6,
+"sub": "near Gate 7"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1512.1,
+"y": 807.1,
+"sub": "near Fire Safety Show"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1170.9,
+"y": 510.9,
+"sub": "near Gate 9"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1104.7,
+"y": 608.5,
+"sub": "near Midway rides"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1074.8,
+"y": 849.3,
+"sub": "near SECU Family Picnic Area"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 957.6,
+"y": 764.0,
+"sub": "near The Marketplace"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1363.2,
+"y": 769.9,
+"sub": "near Orville Terminus"
+},
+{
+"name": "Mothers' room",
+"group": "Services",
+"x": 1074.4,
+"y": 954.3,
+"sub": "near Mobile Dairy Classroom"
+},
+{
+"name": "Mothers' room",
+"group": "Services",
+"x": 914.6,
+"y": 876.4,
+"sub": "near Agri Supply Expo Center"
+},
+{
+"name": "Mothers' room",
+"group": "Services",
+"x": 1073.2,
+"y": 566.6,
+"sub": "near Martin Bldg."
+},
+{
+"name": "Mothers' room",
+"group": "Services",
+"x": 1490.0,
+"y": 598.0,
+"sub": "near Scott Bldg."
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 284.5,
+"y": 408.6,
+"sub": "near Hunt Horse Complex"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 667.0,
+"y": 636.6,
+"sub": "near Heritage Circle"
+},
+{
+"name": "Tram ticket booth",
+"group": "Services",
+"x": 1420.2,
+"y": 562.4,
+"sub": "near Andy Rotz - Wild West Showdown"
+},
+{
+"name": "Public address & reconnection",
+"group": "Services",
+"x": 945.3,
+"y": 877.3,
+"sub": "near Agri Supply Expo Center"
+},
+{
+"name": "Public address & reconnection",
+"group": "Services",
+"x": 1525.5,
+"y": 887.7,
+"sub": "near Group Bus"
+},
+{
+"name": "First aid",
+"group": "Services",
+"x": 366.1,
+"y": 577.5,
+"sub": "near Gate 7"
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 1455.9,
+"y": 614.7,
+"sub": "near Scott Bldg."
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 781.5,
+"y": 689.6,
+"sub": "near Village of Yesteryear"
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 943.8,
+"y": 679.4,
+"sub": "near The Marketplace"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1252.4,
+"y": 756.3,
+"sub": "near Food Hall"
+},
+{
+"name": "Music",
+"group": "Services",
+"x": 1152.5,
+"y": 922.5,
+"sub": "near Live and Local Music Stage"
+},
+{
+"name": "Mothers' room",
+"group": "Services",
+"x": 1223.2,
+"y": 763.4,
+"sub": "near Food Hall"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1203.7,
+"y": 789.8,
+"sub": "near Food Hall"
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 1621.9,
+"y": 822.0,
+"sub": "near Commercial Bldg."
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 1534.3,
+"y": 853.3,
+"sub": "near Gate 12"
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 1011.7,
+"y": 904.2,
+"sub": "near Strolling Piano"
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 1013.1,
+"y": 981.0,
+"sub": "near Mobile Dairy Classroom"
+},
+{
+"name": "Restrooms",
+"group": "Services",
+"x": 1193.1,
+"y": 917.0,
+"sub": "near Got to Be NC Agriculture Pavilion & NC Public House"
+},
+{
+"name": "Daily schedules",
+"group": "Services",
+"x": 1478.9,
+"y": 680.0,
+"sub": "near The One Man Band"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 730.3,
+"y": 625.5,
+"sub": "near Heritage Church & Folk Festival"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 928.0,
+"y": 850.8,
+"sub": "near Agri Supply Expo Center"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1079.3,
+"y": 782.0,
+"sub": "near Tractor Pull / Demolition Derby"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1084.7,
+"y": 525.4,
+"sub": "near Martin Bldg."
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1185.5,
+"y": 1082.0,
+"sub": "near America 250 Wheel"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 1205.4,
+"y": 884.6,
+"sub": "near The Red Trouser Show"
+},
+{
+"name": "Shopping & merchandise",
+"group": "Services",
+"x": 1206.8,
+"y": 940.0,
+"sub": "near Got to Be NC Agriculture Pavilion & NC Public House"
+},
+{
+"name": "Concession stand",
+"group": "Services",
+"x": 1338.1,
+"y": 1016.7,
+"sub": "near Field of Dreams"
+},
+{
+"name": "ATM",
+"group": "Services",
+"x": 856.2,
+"y": 697.2,
+"sub": "near Antique Farm Machinery"
+},
+{
+"name": "Chick-N-Que",
+"group": "New foods",
+"x": 1372.7,
+"y": 468.0,
+"sub": "new-foods map #10"
+},
+{
+"name": "Ragin' Cajun",
+"group": "New foods",
+"x": 1470.5,
+"y": 475.5,
+"sub": "new-foods map #11"
+},
+{
+"name": "Coffee Cake Guy",
+"group": "New foods",
+"x": 1586.0,
+"y": 861.0,
+"sub": "new-foods map #12"
+},
+{
+"name": "Angel Sweets",
+"group": "New foods",
+"x": 1424.2,
+"y": 988.3,
+"sub": "new-foods map #1"
+},
+{
+"name": "Arepa Loca",
+"group": "New foods",
+"x": 1232.8,
+"y": 1112.9,
+"sub": "new-foods map #3"
+},
+{
+"name": "Chester's Gators & Taters",
+"group": "New foods",
+"x": 1124.2,
+"y": 450.0,
+"sub": "new-foods map #9"
+},
+{
+"name": "Another Food Truck LLC",
+"group": "New foods",
+"x": 1383.9,
+"y": 1045.9,
+"sub": "new-foods map #2"
+},
+{
+"name": "Barb Wilson Enterprises II LLC",
+"group": "New foods",
+"x": 726.1,
+"y": 1053.8,
+"sub": "new-foods map #4"
+},
+{
+"name": "Bright Branch Farms Cider House",
+"group": "New foods",
+"x": 691.9,
+"y": 563.9,
+"sub": "new-foods map #5"
+},
+{
+"name": "Granny's Country Kitchen",
+"group": "New foods",
+"x": 661.6,
+"y": 580.0,
+"sub": "new-foods map #23"
+},
+{
+"name": "Brody's Mac & Cheese",
+"group": "New foods",
+"x": 1309.1,
+"y": 626.1,
+"sub": "new-foods map #6"
+},
+{
+"name": "Bulkogi Korean BBQ",
+"group": "New foods",
+"x": 1357.9,
+"y": 734.2,
+"sub": "new-foods map #7"
+},
+{
+"name": "Chef's D'Lites",
+"group": "New foods",
+"x": 1092.5,
+"y": 838.8,
+"sub": "new-foods map #8"
+},
+{
+"name": "D&J Concessions",
+"group": "New foods",
+"x": 1017.0,
+"y": 763.5,
+"sub": "new-foods map #15"
+},
+{
+"name": "Cool Runnings Jamaican",
+"group": "New foods",
+"x": 1092.5,
+"y": 881.2,
+"sub": "new-foods map #13"
+},
+{
+"name": "Cravv Enterprises LLC",
+"group": "New foods",
+"x": 1302.1,
+"y": 712.2,
+"sub": "new-foods map #14"
+},
+{
+"name": "Davis Concessions (Mr. Pickle)",
+"group": "New foods",
+"x": 1396.2,
+"y": 562.7,
+"sub": "new-foods map #16"
+},
+{
+"name": "Dr. Vegetable Inc",
+"group": "New foods",
+"x": 1058.8,
+"y": 858.5,
+"sub": "new-foods map #17"
+},
+{
+"name": "Kora & Mila's Cookie Dough",
+"group": "New foods",
+"x": 1413.6,
+"y": 672.3,
+"sub": "new-foods map #18"
+},
+{
+"name": "Fat Boys BBQ",
+"group": "New foods",
+"x": 1316.2,
+"y": 853.8,
+"sub": "new-foods map #19"
+},
+{
+"name": "Fluffy's Donuts",
+"group": "New foods",
+"x": 940.5,
+"y": 734.2,
+"sub": "new-foods map #20"
+},
+{
+"name": "Fontana Foods",
+"group": "New foods",
+"x": 1048.2,
+"y": 896.6,
+"sub": "new-foods map #21"
+},
+{
+"name": "Goldenkdog",
+"group": "New foods",
+"x": 1312.9,
+"y": 806.8,
+"sub": "new-foods map #22"
+},
+{
+"name": "Heritage Concessions (Quench)",
+"group": "New foods",
+"x": 1385.6,
+"y": 794.1,
+"sub": "new-foods map #24"
+},
+{
+"name": "Hot Chix Hotcakes & Chicken",
+"group": "New foods",
+"x": 1425.8,
+"y": 779.1,
+"sub": "new-foods map #25"
+},
+{
+"name": "Iron Kitchen Holdings LLC",
+"group": "New foods",
+"x": 1363.8,
+"y": 962.1,
+"sub": "new-foods map #26"
+},
+{
+"name": "Kono Pizza",
+"group": "New foods",
+"x": 1432.6,
+"y": 858.5,
+"sub": "new-foods map #27"
+},
+{
+"name": "Kreyol Flavors",
+"group": "New foods",
+"x": 1342.9,
+"y": 1019.1,
+"sub": "new-foods map #28"
+},
+{
+"name": "Lawrence & Perry Barbeque",
+"group": "New foods",
+"x": 1343.9,
+"y": 916.0,
+"sub": "new-foods map #29"
+},
+{
+"name": "Lee's Kitchen",
+"group": "New foods",
+"x": 1381.6,
+"y": 658.5,
+"sub": "new-foods map #30"
+},
+{
+"name": "Magdalena's Chimney Cakes",
+"group": "New foods",
+"x": 1382.8,
+"y": 907.7,
+"sub": "new-foods map #31"
+},
+{
+"name": "Merrill Holdings",
+"group": "New foods",
+"x": 1102.7,
+"y": 942.5,
+"sub": "new-foods map #32"
+},
+{
+"name": "Pioneer Wagon",
+"group": "New foods",
+"x": 1120.0,
+"y": 989.4,
+"sub": "new-foods map #39"
+},
+{
+"name": "Mike Nice Empanadas",
+"group": "New foods",
+"x": 1019.4,
+"y": 816.7,
+"sub": "new-foods map #33"
+},
+{
+"name": "Moose Juice Slush",
+"group": "New foods",
+"x": 1281.4,
+"y": 828.8,
+"sub": "new-foods map #34"
+},
+{
+"name": "Old Style Foods Inc",
+"group": "New foods",
+"x": 1065.5,
+"y": 927.5,
+"sub": "new-foods map #35"
+},
+{
+"name": "OMC! Oh My Churro",
+"group": "New foods",
+"x": 1138.9,
+"y": 829.4,
+"sub": "new-foods map #36"
+},
+{
+"name": "Party in a Pita",
+"group": "New foods",
+"x": 1065.5,
+"y": 821.4,
+"sub": "new-foods map #37"
+},
+{
+"name": "Pickle Bun",
+"group": "New foods",
+"x": 1028.8,
+"y": 922.8,
+"sub": "new-foods map #38"
+},
+{
+"name": "Red Carpet Amusements",
+"group": "New foods",
+"x": 1295.5,
+"y": 669.2,
+"sub": "new-foods map #40"
+},
+{
+"name": "Tiki Tea",
+"group": "New foods",
+"x": 1330.4,
+"y": 660.8,
+"sub": "new-foods map #47"
+},
+{
+"name": "Richies Cheese Curd Tacos",
+"group": "New foods",
+"x": 1277.5,
+"y": 601.4,
+"sub": "new-foods map #41"
+},
+{
+"name": "Rudys",
+"group": "New foods",
+"x": 1117.7,
+"y": 913.9,
+"sub": "new-foods map #42"
+},
+{
+"name": "Taco Neza",
+"group": "New foods",
+"x": 1217.6,
+"y": 562.7,
+"sub": "new-foods map #43"
+},
+{
+"name": "The Cheese Curd Shack",
+"group": "New foods",
+"x": 1443.1,
+"y": 747.0,
+"sub": "new-foods map #44"
+},
+{
+"name": "The Candi Queen",
+"group": "New foods",
+"x": 1350.9,
+"y": 789.4,
+"sub": "new-foods map #45"
+},
+{
+"name": "The Original Minneapple Pie",
+"group": "New foods",
+"x": 1380.5,
+"y": 856.2,
+"sub": "new-foods map #46"
+},
+{
+"name": "Tropical Delights",
+"group": "New foods",
+"x": 1127.3,
+"y": 873.5,
+"sub": "new-foods map #48"
+},
+{
+"name": "Urban Olive Mediterranean",
+"group": "New foods",
+"x": 1448.3,
+"y": 677.5,
+"sub": "new-foods map #49"
+},
+{
+"name": "Waypoint Oyster Bar",
+"group": "New foods",
+"x": 1019.4,
+"y": 954.7,
+"sub": "new-foods map #50"
+}
+]

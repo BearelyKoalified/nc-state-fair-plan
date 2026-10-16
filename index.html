@@ -3,18 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#17161a">
 <title>Elizabeth and Matt's Fair Planner!</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
+  /* Always dark, whatever the browser or OS theme says. */
   :root {
-    --bg: #faf7f2; --panel: #ffffff; --text: #1f1d1a; --muted: #6b655c; --line: #e6e0d6;
-    --food: #d9480f; --ride: #7048e8; --attr: #2b8a3e; --show: #c2255c; --accent: #1c7ed6;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #17161a; --panel: #212026; --text: #ece9e4; --muted: #a39d94; --line: #34323a;
-      --food: #ff8a4c; --ride: #9775fa; --attr: #51cf66; --show: #f06595; --accent: #4dabf7;
-    }
+    color-scheme: dark;
+    --bg: #17161a; --panel: #212026; --text: #ece9e4; --muted: #a39d94; --line: #34323a;
+    --food: #ff8a4c; --ride: #9775fa; --attr: #51cf66; --show: #f06595; --accent: #4dabf7; --extra: #74c0fc;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
@@ -89,6 +87,34 @@
   .mapkey input { accent-color: #4dabf7; margin: 0; }
   .mapkey img { width: 24px; height: 24px; background: #e9edf3; border-radius: 6px; padding: 1px; flex: none; }
   .mapkey input:not(:checked) + img { opacity: .4; }
+  .find h2 { margin-top: 24px; }
+  .find input[type=search] { width: 100%; font: inherit; color: var(--text); background: #2a2930; border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; }
+  .find input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips button { font: inherit; font-size: 12px; cursor: pointer; color: var(--muted); background: transparent;
+    border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+  .chips button.on { color: #10131a; background: var(--accent); border-color: var(--accent); }
+  #results { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; border-top: 1px solid var(--line); }
+  #results li { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  #results li:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  #results .rname { flex: 1; min-width: 0; }
+  #results .rname b { font-weight: 600; display: block; }
+  #results .rname small { color: var(--muted); }
+  #results .add { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+    border: 1px solid var(--line); color: var(--accent); font-weight: 700; }
+  #results li.added .add { background: var(--accent); color: #10131a; border-color: var(--accent); }
+  #results .more { color: var(--muted); font-size: 13px; cursor: default; }
+  .xpin { width: 22px; height: 22px; border-radius: 50%; background: var(--extra); border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,.4); color: #10131a; font: 700 11px/18px system-ui, sans-serif; text-align: center; }
+  .hl-ring { position: relative; width: 70px; height: 70px; pointer-events: none; }
+  .hl-ring::before, .hl-ring::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+    border: 3px solid #ffd43b; box-shadow: 0 0 18px 4px rgba(255, 212, 59, .55), inset 0 0 12px rgba(255, 212, 59, .4);
+    animation: hl 1.4s ease-out infinite; }
+  .hl-ring::after { animation-delay: .7s; }
+  @keyframes hl { from { transform: scale(.25); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .hl-ring::before { animation: none; transform: scale(.8); } .hl-ring::after { display: none; } }
+  .pin.hover { transform: rotate(-45deg) scale(1.35); transition: transform .15s; }
 </style>
 </head>
 <body>
@@ -116,6 +142,12 @@
       Food pins come from the fair's
       <a href="https://www.ncagr.gov/divisions/nc-state-fair/new-fair-foods-map/open">2026 new-foods map</a>
       and are placed by hand, so treat them as close, not exact. Items marked "likely" are a best guess at the vendor.</p>
+    <section class="find">
+      <h2>Find more places</h2>
+      <input type="search" id="q" placeholder="Search restrooms, ATMs, food, buildings…" autocomplete="off">
+      <div class="chips" id="chips"></div>
+      <ul id="results"></ul>
+    </section>
     </div>
     <section class="route">
       <div class="route-head">
@@ -337,7 +369,7 @@ function artOverlay(x0, y0, w, h, inner) {
 
 const lists = document.getElementById('lists');
 let n = 0;
-const entries = [];
+const entries = [];                      // every stop that can be in the route (planned + added from search)
 groups.forEach(g => {
   const h = document.createElement('h2'); h.textContent = g.title; lists.appendChild(h);
   const ul = document.createElement('ul'); ul.className = 'stops'; lists.appendChild(ul);
@@ -352,13 +384,30 @@ groups.forEach(g => {
     li.innerHTML = `<span class="dot" style="background:${c}">${n}</span>
       <span><span class="name">${it.name}</span>${it.likely ? '<span class="tag">likely</span>' : ''}
       <br><span class="where">${it.where}</span></span><span class="check" aria-hidden="true">✓</span>`;
-    const e = { id: n, name: it.name, x: it.x, y: it.y, li, m };
+    const e = { key: 'plan' + n, name: it.name, x: it.x, y: it.y, li, m };
     li.onclick = () => select(e, true);
     m.on('click', () => select(e, false));
+    hoverable(li, e);
     ul.appendChild(li);
     entries.push(e);
   });
 });
+
+// ---- Hover: a pulsing ring shows where an item is on the map ----
+const ring = L.marker([0, 0], { interactive: false, keyboard: false, zIndexOffset: 2000,
+  icon: L.divIcon({ className: '', iconSize: [70, 70], iconAnchor: [35, 35], html: '<div class="hl-ring"></div>' }) });
+function highlight(e) {
+  ring.setLatLng([H - e.y, e.x]).addTo(map);
+  e.m && e.m.getElement() && e.m.getElement().querySelector('.pin')?.classList.add('hover');
+}
+function unhighlight(e) {
+  ring.remove();
+  e && e.m && e.m.getElement() && e.m.getElement().querySelector('.pin')?.classList.remove('hover');
+}
+function hoverable(el, e) {
+  el.addEventListener('mouseenter', () => highlight(e));
+  el.addEventListener('mouseleave', () => unhighlight(e));
+}
 
 // ---- Route: tapped stops, first one is the start, line takes the shortest walk through the rest ----
 const picked = [];                       // entries in the order they were tapped
@@ -368,42 +417,129 @@ const shortestBox = document.getElementById('shortest');
 
 // Tapping a stop adds it to the route; tapping it again takes it back out.
 function select(e, fromList) {
-  if (picked.includes(e)) { e.li.classList.remove('active'); e.m.closePopup(); remove(e); return; }
+  if (picked.includes(e)) { e.li && e.li.classList.remove('active'); e.m && e.m.closePopup(); remove(e); return; }
+  if (e.extra && !e.m) addExtraMarker(e);
   picked.push(e);
   drawRoute();
   focus(e, fromList);
 }
 
 function focus(e, fly) {
-  entries.forEach(x => x.li.classList.remove('active'));
-  e.li.classList.add('active');
+  entries.forEach(x => x.li && x.li.classList.remove('active'));
+  e.li && e.li.classList.add('active');
   if (fly) {
-    map.flyTo(e.m.getLatLng(), Math.max(map.getZoom(), 0.5), { duration: 0.6 });
+    map.flyTo([H - e.y, e.x], Math.max(map.getZoom(), 0.5), { duration: 0.6 });
     if (window.innerWidth <= 760) document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
   }
-  e.m.openPopup();
+  e.m && e.m.openPopup();
 }
 
 function remove(e) {
   picked.splice(picked.indexOf(e), 1);
+  if (e.extra && e.m) { e.m.remove(); e.m = null; }   // places from search only show while they're in the route
+  unhighlight(e);
   drawRoute();
+  renderResults();
 }
 
-// Walking distances and paths between every pair of stops, precomputed along walkways and grass.
-let WALK = null;
-fetch('paths.json?v=3').then(r => r.json()).then(j => { WALK = j; drawRoute(); }).catch(() => {});
-const dist = (a, b) => WALK ? WALK.dist[a.id - 1][b.id - 1] : Math.hypot(a.x - b.x, a.y - b.y);
-function leg(a, b) {                     // points from a to b, following paths when available
-  const i = a.id - 1, j = b.id - 1;
-  let pts = WALK && WALK.paths[i < j ? `${i}-${j}` : `${j}-${i}`];
-  pts = pts ? (i < j ? pts : pts.slice().reverse()) : [];
+// ---- Walking paths, computed in the browser on a grid of walkways and grass (0 = blocked) ----
+const GW = 472, GH = 382, CELL = 4;
+let GRID = null;
+const walkImg = new Image();
+walkImg.onload = () => {
+  const cv = document.createElement('canvas'); cv.width = GW; cv.height = GH;
+  const cx = cv.getContext('2d'); cx.drawImage(walkImg, 0, 0);
+  const d = cx.getImageData(0, 0, GW, GH).data;
+  GRID = new Uint8Array(GW * GH);
+  for (let i = 0; i < GW * GH; i++) GRID[i] = d[i * 4];
+  drawRoute();
+};
+walkImg.src = 'walk.png?v=1';
+const walkable = (x, y) => x >= 0 && y >= 0 && x < GW && y < GH && GRID[y * GW + x] > 0;
+function cellOf(e) {                     // nearest walkable cell to a stop
+  if (e.cell !== undefined) return e.cell;
+  const gx = Math.floor(e.x / CELL), gy = Math.floor(e.y / CELL);
+  for (let r = 0; r < 80; r++) {
+    let best = -1, bd = Infinity;
+    for (let y = gy - r; y <= gy + r; y++) for (let x = gx - r; x <= gx + r; x++) {
+      if (Math.max(Math.abs(x - gx), Math.abs(y - gy)) !== r || !walkable(x, y)) continue;
+      const dd = (x - gx) ** 2 + (y - gy) ** 2;
+      if (dd < bd) { bd = dd; best = y * GW + x; }
+    }
+    if (best >= 0) return (e.cell = best);
+  }
+  return (e.cell = gy * GW + gx);
+}
+const trees = new Map();                 // shortest-path tree from each stop's cell
+function tree(src) {
+  if (trees.has(src)) return trees.get(src);
+  const N = GW * GH, dist = new Float32Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1);
+  const hi = [], hk = [];                // binary heap of (key, index)
+  const push = (k, i) => { let c = hk.length; hk.push(k); hi.push(i);
+    while (c > 0) { const p = (c - 1) >> 1; if (hk[p] <= hk[c]) break; [hk[p], hk[c]] = [hk[c], hk[p]]; [hi[p], hi[c]] = [hi[c], hi[p]]; c = p; } };
+  const pop = () => { const k = hk[0], i = hi[0], lk = hk.pop(), li = hi.pop();
+    if (hk.length) { hk[0] = lk; hi[0] = li; let c = 0;
+      for (;;) { const l = 2 * c + 1, r = l + 1; let m = c;
+        if (l < hk.length && hk[l] < hk[m]) m = l; if (r < hk.length && hk[r] < hk[m]) m = r;
+        if (m === c) break; [hk[m], hk[c]] = [hk[c], hk[m]]; [hi[m], hi[c]] = [hi[c], hi[m]]; c = m; } }
+    return [k, i]; };
+  const NB = [[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,Math.SQRT2],[1,-1,Math.SQRT2],[-1,1,Math.SQRT2],[-1,-1,Math.SQRT2]];
+  dist[src] = 0; push(0, src);
+  while (hk.length) {
+    const [d, i] = pop();
+    if (d > dist[i]) continue;
+    const x = i % GW, y = (i / GW) | 0, ci = GRID[i] / 100;
+    for (const [dx, dy, w] of NB) {
+      const a = x + dx, b = y + dy;
+      if (!walkable(a, b) || (dx && dy && !(walkable(x + dx, y) && walkable(x, y + dy)))) continue;
+      const j = b * GW + a, nd = d + w * (ci + GRID[j] / 100) / 2;
+      if (nd < dist[j]) { dist[j] = nd; prev[j] = i; push(nd, j); }
+    }
+  }
+  const t = { dist, prev }; trees.set(src, t); return t;
+}
+function los(p, q) {                     // straight segment stays on walkable cells
+  const steps = Math.ceil(Math.max(Math.abs(q[0] - p[0]), Math.abs(q[1] - p[1])) * 2) + 1;
+  for (let s = 0; s <= steps; s++)
+    if (!walkable(Math.round(p[0] + (q[0] - p[0]) * s / steps), Math.round(p[1] + (q[1] - p[1]) * s / steps))) return false;
+  return true;
+}
+const dist = (a, b) => {
+  if (!GRID) return Math.hypot(a.x - b.x, a.y - b.y);
+  const d = tree(cellOf(a)).dist[cellOf(b)];
+  return isFinite(d) ? d * CELL : Math.hypot(a.x - b.x, a.y - b.y) * 3;
+};
+function leg(a, b) {                     // points from a to b along walkways
+  let pts = [];
+  if (GRID) {
+    const { prev } = tree(cellOf(a)), raw = [];
+    for (let c = cellOf(b); c !== -1; c = prev[c]) { raw.push([c % GW, (c / GW) | 0]); if (c === cellOf(a)) break; }
+    raw.reverse();
+    if (raw.length > 1) {                // string-pull: keep only the corners we need
+      let i = 0; pts.push(raw[0]);
+      while (i < raw.length - 1) { let j = raw.length - 1; while (j > i + 1 && !los(raw[i], raw[j])) j--; pts.push(raw[j]); i = j; }
+    }
+    pts = pts.map(([x, y]) => [x * CELL + 2, y * CELL + 2]);
+  }
   return [[a.x, a.y], ...pts, [b.x, b.y]].map(([x, y]) => L.latLng(H - y, x));
 }
 
-// Exact shortest open path that starts at pts[0] and visits every point (Held-Karp; fine for 12 stops).
+// Shortest open path that starts at pts[0] and visits every point: exact (Held-Karp) up to 13 stops,
+// nearest-neighbour + 2-opt beyond that.
 function shortestOrder(pts) {
   const k = pts.length;
   if (k <= 2) return pts.slice();
+  if (k > 13) {
+    let route = [pts[0]], left = pts.slice(1);
+    while (left.length) { const last = route[route.length - 1];
+      left.sort((p, q) => dist(last, p) - dist(last, q)); route.push(left.shift()); }
+    const len = r => r.slice(1).reduce((s, p, i) => s + dist(r[i], p), 0);
+    for (let improved = true; improved; ) { improved = false;
+      for (let i = 1; i < route.length - 1; i++) for (let j = i + 1; j < route.length; j++) {
+        const cand = [...route.slice(0, i), ...route.slice(i, j + 1).reverse(), ...route.slice(j + 1)];
+        if (len(cand) + 1e-6 < len(route)) { route = cand; improved = true; } } }
+    return route;
+  }
   const n = k - 1, FULL = 1 << n;
   const cost = Array.from({ length: FULL }, () => new Float64Array(n).fill(Infinity));
   const prev = Array.from({ length: FULL }, () => new Int8Array(n).fill(-1));
@@ -427,7 +563,7 @@ function shortestOrder(pts) {
 
 function drawRoute() {
   routeLayer.clearLayers();
-  entries.forEach(x => x.li.classList.toggle('inroute', picked.includes(x)));
+  entries.forEach(x => x.li && x.li.classList.toggle('inroute', picked.includes(x)));
   const route = shortestBox.checked ? shortestOrder(picked) : picked.slice();
   const ll = route.map(e => L.latLng(H - e.y, e.x));
   const line = [];
@@ -450,6 +586,7 @@ function drawRoute() {
       <button class="x" type="button" aria-label="Remove ${e.name}">×</button>`;
     li.querySelector('.rt').onclick = () => focus(e, true);
     li.querySelector('.x').onclick = () => remove(e);
+    hoverable(li, e);
     routeList.appendChild(li);
   });
   document.getElementById('clear').hidden = picked.length === 0;
@@ -458,7 +595,52 @@ function drawRoute() {
 }
 
 shortestBox.onchange = drawRoute;
-document.getElementById('clear').onclick = () => { picked.length = 0; map.closePopup(); drawRoute(); };
+document.getElementById('clear').onclick = () => {
+  picked.splice(0).forEach(e => { if (e.extra && e.m) { e.m.remove(); e.m = null; } });
+  map.closePopup(); drawRoute(); renderResults();
+};
+
+// ---- Find more places: everything else on the map, hidden until you add it ----
+const GROUPS = ['All', 'Attractions', 'New foods', 'Services', 'Places', 'Gates'];
+let PLACES = [], group = 'All';
+const qBox = document.getElementById('q'), resultsEl = document.getElementById('results'), chipsEl = document.getElementById('chips');
+chipsEl.innerHTML = GROUPS.map(g => `<button type="button" data-g="${g}" class="${g === group ? 'on' : ''}">${g}</button>`).join('');
+chipsEl.onclick = ev => { const b = ev.target.closest('button'); if (!b) return;
+  group = b.dataset.g; chipsEl.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); renderResults(); };
+qBox.oninput = () => renderResults();
+fetch('places.json?v=1').then(r => r.json()).then(list => {
+  PLACES = list.map((p, i) => ({ ...p, key: 'place' + i, extra: true, m: null }));
+  renderResults();
+});
+function addExtraMarker(e) {
+  const icon = L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -10],
+    html: `<div class="xpin">${e.group[0]}</div>` });
+  e.m = L.marker([H - e.y, e.x], { icon, zIndexOffset: 500 }).addTo(map)
+    .bindPopup(`<b>${e.name}</b>${e.sub ? '<br>' + e.sub : ''}`);
+  e.m.on('click', () => select(e, false));
+  if (!entries.includes(e)) entries.push(e);
+}
+function renderResults() {
+  if (!PLACES.length) return;
+  const q = qBox.value.trim().toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  const hits = PLACES.filter(p => (group === 'All' || p.group === group) &&
+    words.every(w => (p.name + ' ' + p.sub + ' ' + p.group).toLowerCase().includes(w)));
+  const shown = hits.slice(0, 80);
+  resultsEl.innerHTML = '';
+  shown.forEach(p => {
+    const li = document.createElement('li');
+    li.className = picked.includes(p) ? 'added' : '';
+    li.innerHTML = `<span class="rname"><b>${p.name}</b><small>${p.group}${p.sub ? ' · ' + p.sub : ''}</small></span>
+      <span class="add" aria-hidden="true">${picked.includes(p) ? '✓' : '+'}</span>`;
+    li.title = picked.includes(p) ? 'Remove from your route' : 'Add to your route';
+    li.onclick = () => { select(p, true); renderResults(); };
+    hoverable(li, p);
+    resultsEl.appendChild(li);
+  });
+  if (hits.length > shown.length) resultsEl.insertAdjacentHTML('beforeend', `<li class="more">${hits.length - shown.length} more — keep typing to narrow it down</li>`);
+  if (!hits.length) resultsEl.innerHTML = '<li class="more">No matches</li>';
+}
 </script>
 </body>
 </html>
