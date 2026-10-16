@@ -837,7 +837,9 @@ function updateDots() {
   const z = map.getZoom(), steps = zoomSteps();
   if (!searching && z < steps.dots) return;
   const labels = searching || z >= steps.labels;
-  const base = searching ? { r: 6, op: 0.95 } : labels ? { r: 4.5, op: 0.85 } : { r: 3.5, op: 0.6 };
+  // dots grow with zoom: pin-pricks when zoomed out, full size once names show
+  const t = Math.max(0, Math.min(1, (z - steps.dots) / (steps.labels + 0.75 - steps.dots)));
+  const base = searching ? { r: 6, op: 0.95 } : { r: 1.4 + t * 3.1, op: 0.4 + t * 0.45 };
   const list = (searching ? placeMatches() : PLACES).filter(p => !picked.includes(p));   // selected places have a pin
   // greedy label placement in screen space: higher-priority groups first, skip any name that would overlap
   const named = new Set();
@@ -854,13 +856,13 @@ function updateDots() {
   }
   list.forEach(p => {
     const c = DOT_COLORS[p.group] || '#dee2e6';
-    const dot = L.circleMarker([H - p.y, p.x], { renderer: dotRenderer, radius: base.r, color: '#10131a', weight: 1,
+    const dot = L.circleMarker([H - p.y, p.x], { renderer: dotRenderer, radius: base.r, color: '#10131a', weight: base.r < 2.5 ? 0 : 1,
       fillColor: c, fillOpacity: base.op, opacity: base.op });
     const tip = `<b>${p.name}</b>${p.sub ? '<br>' + p.sub : ''}<br><small>Tap to add to Elizabeth's interests</small>`;
     if (named.has(p)) dot.bindTooltip(shortName(p), { permanent: true, direction: 'right', offset: [5, 0], className: 'dot-label' });
     else dot.bindTooltip(tip, { direction: 'top', offset: [0, -6] });
-    dot.on('mouseover', () => dot.setStyle({ radius: base.r + 3, fillOpacity: 1, opacity: 1 }));
-    dot.on('mouseout', () => dot.setStyle({ radius: base.r, fillOpacity: base.op, opacity: base.op }));
+    dot.on('mouseover', () => dot.setStyle({ radius: Math.max(base.r + 3, 5), fillOpacity: 1, opacity: 1, weight: 1 }));
+    dot.on('mouseout', () => dot.setStyle({ radius: base.r, fillOpacity: base.op, opacity: base.op, weight: base.r < 2.5 ? 0 : 1 }));
     dot.on('click', () => { eliz.includes(p) ? select(p, false) : addToEliz(p); renderResults(); });
     dot.addTo(dotLayer);
   });
