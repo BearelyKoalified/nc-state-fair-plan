@@ -128,6 +128,11 @@
   #eliz-empty { margin: 6px 0 0; }
   ul.stops .drop { flex: none; border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
   ul.stops .drop:hover { color: var(--text); }
+  h3.who .fold { all: unset; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; }
+  h3.who .fold:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h3.who .chev { font-size: 11px; color: var(--muted); width: 10px; transition: transform .15s; }
+  h3.who .fold[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+  h3.who .count { color: var(--muted); font-weight: 400; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -141,7 +146,13 @@
       <span><i style="background:linear-gradient(90deg,#1c7ed6,#74c0fc)"></i>Elizabeth's interests (each its own blue)</span>
     </div>
     <div id="lists"></div>
-    <h2>Suggested order</h2>
+    <section class="find">
+      <h2>Find more places</h2>
+      <input type="search" id="q" placeholder="Search restrooms, ATMs, food, buildings…" autocomplete="off">
+      <div class="chips" id="chips"></div>
+      <ul id="results"></ul>
+    </section>
+    <h2 style="margin-top:24px">Suggested order</h2>
     <ol class="order">
       <li>Start with the exhibit areas: Village of Yesteryear, State Fair Ark, Children's Barnyard, Heritage Circle. They close at 9:45 PM, so do them first.</li>
       <li>Grab food along the way and at the midway.</li>
@@ -153,12 +164,6 @@
       Food pins come from the fair's
       <a href="https://www.ncagr.gov/divisions/nc-state-fair/new-fair-foods-map/open">2026 new-foods map</a>
       and are placed by hand, so treat them as close, not exact. Items marked "likely" are a best guess at the vendor.</p>
-    <section class="find">
-      <h2>Find more places</h2>
-      <input type="search" id="q" placeholder="Search restrooms, ATMs, food, buildings…" autocomplete="off">
-      <div class="chips" id="chips"></div>
-      <ul id="results"></ul>
-    </section>
     </div>
     <section class="route">
       <div class="route-head">
@@ -204,7 +209,7 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png?v=7', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=8', bounds).addTo(map);
 
 // ---- Map key: each kind of icon is its own layer that can be shown or hidden ----
 const KEY = [
@@ -387,10 +392,22 @@ const pinIcon = (c, label) => L.divIcon({ className: '', iconSize: [30, 30], ico
   html: `<div class="pin" style="background:${c}"><span>${label}</span></div>` });
 let n = 0;
 const entries = [];                      // every stop that can be in the route (Matt's + Elizabeth's)
-lists.insertAdjacentHTML('beforeend', `<h3 class="who"><i style="background:${MATT}"></i>Matt's interests</h3>`);
+// Each person's section folds away from its header (remembered per browser).
+function section(id, title, swatch) {
+  lists.insertAdjacentHTML('beforeend', `<h3 class="who"><button type="button" class="fold" aria-expanded="true" aria-controls="${id}">
+    <span class="chev">▾</span><i style="background:${swatch}"></i>${title} <span class="count" id="${id}-count"></span></button></h3>
+    <div class="who-body" id="${id}"></div>`);
+  const btn = lists.querySelector(`[aria-controls="${id}"]`), body = document.getElementById(id);
+  const set = open => { body.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+    try { localStorage.setItem('fold-' + id, open ? '1' : '0'); } catch (e) {} };
+  let open = true; try { open = localStorage.getItem('fold-' + id) !== '0'; } catch (e) {}
+  set(open); btn.onclick = () => set(body.hidden);
+  return body;
+}
+const mattBody = section('matt-sec', "Matt's interests", MATT);
 groups.forEach(g => {
-  const h = document.createElement('h2'); h.textContent = g.title; lists.appendChild(h);
-  const ul = document.createElement('ul'); ul.className = 'stops'; lists.appendChild(ul);
+  const h = document.createElement('h2'); h.textContent = g.title; mattBody.appendChild(h);
+  const ul = document.createElement('ul'); ul.className = 'stops'; mattBody.appendChild(ul);
   g.items.forEach(it => {
     n++;
     const c = MATT;
@@ -410,9 +427,10 @@ groups.forEach(g => {
 });
 
 // Elizabeth's interests: anything added from "Find more places". Each gets its own shade of blue.
-lists.insertAdjacentHTML('beforeend', `<h3 class="who"><i style="background:linear-gradient(90deg,#1c7ed6,#74c0fc)"></i>Elizabeth's interests</h3>
-  <p class="where" id="eliz-empty">Nothing yet. Use <b>Find more places</b> at the bottom to add things.</p>
+section('eliz-sec', "Elizabeth's interests", 'linear-gradient(90deg,#1c7ed6,#74c0fc)').insertAdjacentHTML('beforeend',
+  `<p class="where" id="eliz-empty">Nothing yet. Use <b>Find more places</b> below to add things.</p>
   <ul class="stops" id="eliz"></ul>`);
+document.getElementById('matt-sec-count').textContent = `· ${n}`;
 const elizUl = document.getElementById('eliz');
 const eliz = [];                         // Elizabeth's entries, in the order she added them
 function addToEliz(p, andSelect = true, shade) {
@@ -437,7 +455,10 @@ function dropFromEliz(p) {
   eliz.splice(eliz.indexOf(p), 1); entries.splice(entries.indexOf(p), 1);
   saveEliz(); refreshEliz(); renderResults();
 }
-function refreshEliz() { document.getElementById('eliz-empty').hidden = eliz.length > 0; }
+function refreshEliz() {
+  document.getElementById('eliz-empty').hidden = eliz.length > 0;
+  document.getElementById('eliz-sec-count').textContent = eliz.length ? `· ${eliz.length}` : '';
+}
 function saveEliz() { try { localStorage.setItem('elizInterests', JSON.stringify(eliz.map(p => [p.key, p.shade]))); } catch (e) {} }
 
 // ---- Hover: a pulsing ring shows where an item is on the map ----
