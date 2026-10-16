@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NC State Fair Plan</title>
+<title>Elizabeth and Matt's Fair Planner!</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root {
@@ -44,6 +44,25 @@
   .pin span { transform: rotate(45deg); color: #fff; font-weight: 700; font-size: 13px; }
   .leaflet-popup-content { margin: 10px 14px; font: 14px/1.4 system-ui, sans-serif; }
   .leaflet-popup-content b { font-size: 15px; }
+  .route { background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid var(--line);
+    border-radius: 10px; padding: 4px 12px 10px; margin-bottom: 14px; }
+  .route-head { display: flex; justify-content: space-between; align-items: center; }
+  .route-head h2 { margin: 10px 0 6px; color: var(--text); }
+  .route button, .route-list button { font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: var(--panel); color: var(--text); border-radius: 6px; padding: 2px 10px; font-size: 13px; }
+  .toggle { display: block; font-size: 13px; color: var(--muted); margin: 6px 0; cursor: pointer; }
+  #route-list { margin: 6px 0 0; padding: 0; list-style: none; }
+  #route-list li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; }
+  #route-list li .rn { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
+    color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  #route-list li .rt { flex: 1; cursor: pointer; }
+  #route-list li .rt small { color: var(--muted); }
+  #route-list li button.x { border: 0; background: none; color: var(--muted); font-size: 16px; padding: 0 4px; cursor: pointer; }
+  ul.stops li.inroute .name::after { content: " ✓"; color: var(--accent); }
+  .rbadge { background: var(--accent); color: #fff; border: 2px solid #fff; border-radius: 50%;
+    width: 22px; height: 22px; font: 700 12px/18px system-ui, sans-serif; text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+  .rbadge.start { background: #111; }
   .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12.5px; color: var(--muted); }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
   @media (max-width: 760px) {
@@ -56,8 +75,17 @@
 <body>
 <div class="app">
   <aside>
-    <h1>NC State Fair Plan</h1>
-    <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map.</p>
+    <h1>Elizabeth and Matt's Fair Planner!</h1>
+    <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map and add it to your route.</p>
+    <section class="route">
+      <div class="route-head">
+        <h2>Your route</h2>
+        <button id="clear" type="button" hidden>Clear</button>
+      </div>
+      <p id="route-hint" class="where">Tap stops below (or pins on the map). The first one you tap is where you start, and the line takes the shortest path through the rest.</p>
+      <label id="order-toggle" class="toggle" hidden><input type="checkbox" id="shortest" checked> Shortest path (off = the order I tapped)</label>
+      <ol id="route-list"></ol>
+    </section>
     <div class="legend">
       <span><i style="background:var(--food)"></i>Food</span>
       <span><i style="background:var(--ride)"></i>Ride</span>
@@ -133,18 +161,96 @@ groups.forEach(g => {
     li.innerHTML = `<span class="dot" style="background:${c}">${n}</span>
       <span><span class="name">${it.name}</span>${it.likely ? '<span class="tag">likely</span>' : ''}
       <br><span class="where">${it.where}</span></span>`;
-    li.onclick = () => {
-      entries.forEach(e => e.li.classList.remove('active'));
-      li.classList.add('active');
-      map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 0.5), { duration: 0.6 });
-      m.openPopup();
-      if (window.innerWidth <= 760) document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
-    };
-    m.on('click', () => { entries.forEach(e => e.li.classList.remove('active')); li.classList.add('active'); });
+    const e = { id: n, name: it.name, x: it.x, y: it.y, li, m };
+    li.onclick = () => select(e, true);
+    m.on('click', () => select(e, false));
     ul.appendChild(li);
-    entries.push({ li, m });
+    entries.push(e);
   });
 });
+
+// ---- Route: tapped stops, first one is the start, line takes the shortest path through the rest ----
+const picked = [];                       // entries in the order they were tapped
+const routeLayer = L.layerGroup().addTo(map);
+const routeList = document.getElementById('route-list');
+const shortestBox = document.getElementById('shortest');
+
+function select(e, fromList) {
+  entries.forEach(x => x.li.classList.remove('active'));
+  e.li.classList.add('active');
+  if (!picked.includes(e)) picked.push(e);
+  drawRoute();
+  if (fromList) {
+    map.flyTo(e.m.getLatLng(), Math.max(map.getZoom(), 0.5), { duration: 0.6 });
+    if (window.innerWidth <= 760) document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+  }
+  e.m.openPopup();
+}
+
+function remove(e) {
+  picked.splice(picked.indexOf(e), 1);
+  drawRoute();
+}
+
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+// Exact shortest open path that starts at pts[0] and visits every point (Held-Karp; fine for 12 stops).
+function shortestOrder(pts) {
+  const k = pts.length;
+  if (k <= 2) return pts.slice();
+  const n = k - 1, FULL = 1 << n;
+  const cost = Array.from({ length: FULL }, () => new Float64Array(n).fill(Infinity));
+  const prev = Array.from({ length: FULL }, () => new Int8Array(n).fill(-1));
+  for (let j = 0; j < n; j++) cost[1 << j][j] = dist(pts[0], pts[j + 1]);
+  for (let mask = 1; mask < FULL; mask++) {
+    for (let j = 0; j < n; j++) {
+      if (!(mask & (1 << j)) || cost[mask][j] === Infinity) continue;
+      for (let t = 0; t < n; t++) {
+        if (mask & (1 << t)) continue;
+        const nm = mask | (1 << t), c = cost[mask][j] + dist(pts[j + 1], pts[t + 1]);
+        if (c < cost[nm][t]) { cost[nm][t] = c; prev[nm][t] = j; }
+      }
+    }
+  }
+  let end = 0;
+  for (let j = 1; j < n; j++) if (cost[FULL - 1][j] < cost[FULL - 1][end]) end = j;
+  const order = [];
+  for (let mask = FULL - 1, j = end; j !== -1; ) { order.push(pts[j + 1]); const p = prev[mask][j]; mask ^= 1 << j; j = p; }
+  return [pts[0], ...order.reverse()];
+}
+
+function drawRoute() {
+  routeLayer.clearLayers();
+  entries.forEach(x => x.li.classList.toggle('inroute', picked.includes(x)));
+  const route = shortestBox.checked ? shortestOrder(picked) : picked.slice();
+  const ll = route.map(e => L.latLng(H - e.y, e.x));
+  if (ll.length > 1) {
+    L.polyline(ll, { color: '#fff', weight: 8, opacity: .85 }).addTo(routeLayer);
+    L.polyline(ll, { color: color('accent'), weight: 4, dashArray: '10 8' }).addTo(routeLayer);
+  }
+  route.forEach((e, i) => {
+    L.marker(ll[i], { interactive: false, zIndexOffset: 1000, icon: L.divIcon({ className: '',
+      iconSize: [22, 22], iconAnchor: [-6, 40],
+      html: `<div class="rbadge${i === 0 ? ' start' : ''}">${i === 0 ? '★' : i + 1}</div>` }) }).addTo(routeLayer);
+  });
+
+  routeList.innerHTML = '';
+  route.forEach((e, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="rn" style="${i === 0 ? 'background:#111' : ''}">${i === 0 ? '★' : i + 1}</span>
+      <span class="rt">${e.name}${i === 0 ? ' <small>(start)</small>' : ''}</span>
+      <button class="x" type="button" aria-label="Remove ${e.name}">×</button>`;
+    li.querySelector('.rt').onclick = () => select(e, true);
+    li.querySelector('.x').onclick = () => remove(e);
+    routeList.appendChild(li);
+  });
+  document.getElementById('clear').hidden = picked.length === 0;
+  document.getElementById('order-toggle').hidden = picked.length < 3;
+  document.getElementById('route-hint').hidden = picked.length > 1;
+}
+
+shortestBox.onchange = drawRoute;
+document.getElementById('clear').onclick = () => { picked.length = 0; map.closePopup(); drawRoute(); };
 </script>
 </body>
 </html>
