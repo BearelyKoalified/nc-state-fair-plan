@@ -53,16 +53,16 @@
   .toggle { display: block; font-size: 13px; color: var(--muted); margin: 6px 0; cursor: pointer; }
   #route-list { margin: 6px 0 0; padding: 0; list-style: none; }
   #route-list li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; }
-  #route-list li .rn { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
-    color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  #route-list li .rn { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--text);
+    color: var(--panel); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
   #route-list li .rt { flex: 1; cursor: pointer; }
   #route-list li .rt small { color: var(--muted); }
   #route-list li button.x { border: 0; background: none; color: var(--muted); font-size: 16px; padding: 0 4px; cursor: pointer; }
   ul.stops li.inroute .name::after { content: " ✓"; color: var(--accent); }
-  .rbadge { background: var(--accent); color: #fff; border: 2px solid #fff; border-radius: 50%;
+  .rbadge { background: #000; color: #fff; border: 2px solid #fff; border-radius: 50%;
     width: 22px; height: 22px; font: 700 12px/18px system-ui, sans-serif; text-align: center;
     box-shadow: 0 1px 4px rgba(0,0,0,.4); }
-  .rbadge.start { background: #111; }
+  .rbadge.start, #route-list li .rn.start { background: #ffd43b; color: #000; }
   .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12.5px; color: var(--muted); }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
   @media (max-width: 760px) {
@@ -225,8 +225,8 @@ function drawRoute() {
   const route = shortestBox.checked ? shortestOrder(picked) : picked.slice();
   const ll = route.map(e => L.latLng(H - e.y, e.x));
   if (ll.length > 1) {
-    L.polyline(ll, { color: '#fff', weight: 8, opacity: .85 }).addTo(routeLayer);
-    L.polyline(ll, { color: color('accent'), weight: 4, dashArray: '10 8' }).addTo(routeLayer);
+    L.polyline(ll, { color: '#fff', weight: 10, opacity: .95 }).addTo(routeLayer);
+    L.polyline(ll, { color: '#000', weight: 5 }).addTo(routeLayer);
   }
   route.forEach((e, i) => {
     L.marker(ll[i], { interactive: false, zIndexOffset: 1000, icon: L.divIcon({ className: '',
@@ -237,7 +237,7 @@ function drawRoute() {
   routeList.innerHTML = '';
   route.forEach((e, i) => {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="rn" style="${i === 0 ? 'background:#111' : ''}">${i === 0 ? '★' : i + 1}</span>
+    li.innerHTML = `<span class="rn${i === 0 ? ' start' : ''}">${i === 0 ? '★' : i + 1}</span>
       <span class="rt">${e.name}${i === 0 ? ' <small>(start)</small>' : ''}</span>
       <button class="x" type="button" aria-label="Remove ${e.name}">×</button>`;
     li.querySelector('.rt').onclick = () => select(e, true);
