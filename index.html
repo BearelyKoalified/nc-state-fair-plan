@@ -7,6 +7,9 @@
 <meta name="theme-color" content="#17161a">
 <title>Elizabeth and Matt's Fair Planner!</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&display=swap">
 <style>
   /* Always dark, whatever the browser or OS theme says. */
   :root {
@@ -371,6 +374,73 @@ function artOverlay(x0, y0, w, h, inner) {
     ${cars}
     <circle cx="${ax}" cy="${ay}" r="13" fill="#283e96" stroke="#9aa5b8" stroke-width="2"/>
     <circle cx="${bx}" cy="${by}" r="13" fill="#283e96" stroke="#9aa5b8" stroke-width="2"/>`);
+})();
+
+// Title sign above the fairgrounds: a carnival marquee with chasing bulbs, bunting and sparkles.
+(() => {
+  const X0 = 1060, Y0 = 92, X1 = 2960, Y1 = 292, R = 46;          // sign box (art pixels)
+  const W = X1 - X0, Hh = Y1 - Y0, cx = (X0 + X1) / 2;
+  // bulbs every ~46px around the rounded rectangle, alternating so they "chase"
+  const bulbs = [[], []];
+  const step = 46, per = 2 * (W - 2 * R) + 2 * (Hh - 2 * R) + 2 * Math.PI * R;
+  const along = d => {                                               // point on the rounded-rect border at distance d
+    const segs = [[W - 2 * R, (t) => [X0 + R + t, Y0]], [Math.PI * R / 2, t => { const a = -Math.PI / 2 + t / R; return [X1 - R + R * Math.cos(a), Y0 + R + R * Math.sin(a)]; }],
+      [Hh - 2 * R, t => [X1, Y0 + R + t]], [Math.PI * R / 2, t => { const a = t / R; return [X1 - R + R * Math.cos(a), Y1 - R + R * Math.sin(a)]; }],
+      [W - 2 * R, t => [X1 - R - t, Y1]], [Math.PI * R / 2, t => { const a = Math.PI / 2 + t / R; return [X0 + R + R * Math.cos(a), Y1 - R + R * Math.sin(a)]; }],
+      [Hh - 2 * R, t => [X0, Y1 - R - t]], [Math.PI * R / 2, t => { const a = Math.PI + t / R; return [X0 + R + R * Math.cos(a), Y0 + R + R * Math.sin(a)]; }]];
+    for (const [len, f] of segs) { if (d <= len) return f(d); d -= len; }
+    return [X0 + R, Y0];
+  };
+  const nB = Math.round(per / step);
+  for (let i = 0; i < nB; i++) { const [x, y] = along(i * per / nB); bulbs[i % 2].push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7"/>`); }
+
+  // bunting strung in two swoops above the sign
+  const flagColors = ['#ff6b6b', '#ffd43b', '#4dabf7', '#51cf66', '#f783ac', '#ff922b', '#74c0fc', '#69db7c'];
+  let bunting = '';
+  for (const [sx, ex] of [[X0 + 40, cx - 20], [cx + 20, X1 - 40]]) {
+    const sag = 22, n = 11, top = Y0 - 64;
+    bunting += `<path d="M${sx} ${top} Q${(sx + ex) / 2} ${top + 2 * sag} ${ex} ${top}" fill="none" stroke="#c9ced6" stroke-width="2.5"/>`;
+    for (let i = 1; i < n; i++) {
+      const t = i / n, x = (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * (sx + ex) / 2 + t * t * ex;
+      const y = (1 - t) * (1 - t) * top + 2 * (1 - t) * t * (top + 2 * sag) + t * t * top;
+      const c = flagColors[(i + (sx > cx ? 3 : 0)) % flagColors.length], d = (i * 0.37) % 2.4;
+      bunting += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><path d="M-17 0L17 0L0 34Z" fill="${c}">
+        <animateTransform attributeName="transform" type="rotate" values="-7 0 0;7 0 0;-7 0 0" dur="2.4s" begin="-${d.toFixed(2)}s" repeatCount="indefinite"/></path></g>`;
+    }
+  }
+
+  // twinkling four-point sparkles around the sign
+  const spark = (x, y, s, c, d) => `<g transform="translate(${x} ${y})"><path d="M0 -${s}L${s * .22} -${s * .22}L${s} 0L${s * .22} ${s * .22}L0 ${s}L-${s * .22} ${s * .22}L-${s} 0L-${s * .22} -${s * .22}Z" fill="${c}" opacity="0">
+      <animate attributeName="opacity" values="0;1;0;0" keyTimes="0;.25;.5;1" dur="2.8s" begin="${d}s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values=".3;1.1;.3;.3" keyTimes="0;.25;.5;1" dur="2.8s" begin="${d}s" repeatCount="indefinite"/></path></g>`;
+  const sparks = [[X0 - 30, Y0 + 20, 22, '#ffe066', 0], [X1 + 26, Y0 + 30, 26, '#ffffff', .7], [X0 + 760, Y1 + 30, 16, '#74c0fc', 1.3],
+    [X1 - 140, Y1 + 30, 18, '#69db7c', 2.0], [cx - 60, Y0 - 66, 14, '#ffffff', .4], [cx + 70, Y0 - 52, 12, '#ffe066', 1.6],
+    [X0 - 18, Y1 - 30, 14, '#69db7c', 2.3], [X1 + 14, Y1 - 24, 15, '#74c0fc', 1.0]].map(a => spark(...a)).join('');
+
+  const blink = (begin) => `<animate attributeName="opacity" values="1;.25;1" dur="1.1s" begin="${begin}" repeatCount="indefinite"/>`;
+  artOverlay(X0 - 80, Y0 - 80, W + 160, Hh + 150, `
+    <defs>
+      <linearGradient id="t-blue" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#a5d8ff"/><stop offset=".55" stop-color="#4dabf7"/><stop offset="1" stop-color="#1c7ed6"/></linearGradient>
+      <linearGradient id="t-green" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b2f2bb"/><stop offset=".55" stop-color="#51cf66"/><stop offset="1" stop-color="#2b8a3e"/></linearGradient>
+      <linearGradient id="t-gold" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3bf"/><stop offset=".6" stop-color="#ffd43b"/><stop offset="1" stop-color="#f59f00"/></linearGradient>
+      <linearGradient id="t-shine" gradientUnits="userSpaceOnUse" x1="${X0 - 400}" x2="${X0}" y1="0" y2="0">
+        <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        <animateTransform attributeName="gradientTransform" type="translate" values="0 0;${W + 800} 0;${W + 800} 0" keyTimes="0;.55;1" dur="5s" repeatCount="indefinite"/>
+      </linearGradient>
+      <filter id="t-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    ${bunting}
+    <rect x="${X0}" y="${Y0}" width="${W}" height="${Hh}" rx="${R}" fill="#1b2232" stroke="#a61e4d" stroke-width="10"/>
+    <rect x="${X0 + 18}" y="${Y0 + 18}" width="${W - 36}" height="${Hh - 36}" rx="${R - 16}" fill="none" stroke="#ffd43b" stroke-opacity=".35" stroke-width="2"/>
+    <g fill="#ffe066" filter="url(#t-glow)"><g>${blink('0s')}${bulbs[0].join('')}</g><g>${blink('-.55s')}${bulbs[1].join('')}</g></g>
+    <g font-family="Lobster, 'Brush Script MT', cursive" font-size="112" text-anchor="middle">
+      <text x="${cx}" y="${Y0 + Hh / 2 + 38}" textLength="${W - 170}" lengthAdjust="spacingAndGlyphs"
+        stroke="#0b0f17" stroke-width="10" stroke-linejoin="round" paint-order="stroke" fill="url(#t-gold)"
+        ><tspan fill="url(#t-blue)">Elizabeth</tspan> and <tspan fill="url(#t-green)">Matt</tspan>'s Fair Planner!</text>
+      <text x="${cx}" y="${Y0 + Hh / 2 + 38}" textLength="${W - 170}" lengthAdjust="spacingAndGlyphs" fill="url(#t-shine)"
+        >Elizabeth and Matt's Fair Planner!</text>
+    </g>
+    ${sparks}`);
 })();
 
 // Fireworks over the pond: staggered bursts that bloom and fade.
