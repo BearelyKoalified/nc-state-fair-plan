@@ -137,14 +137,8 @@
     <h1>Elizabeth and Matt's Fair Planner!</h1>
     <p class="sub">Monday evening, about 5–6 PM to close. Tap a stop to find it on the map and add it to your route; tap it again to remove it.</p>
     <div class="legend">
-      <span><i style="background:#40c057"></i>Matt's picks</span>
-      <span><i style="background:linear-gradient(90deg,#1c7ed6,#74c0fc)"></i>Elizabeth's picks (each its own blue)</span>
-    </div>
-    <div class="legend" style="margin-top:6px">
-      <span><i style="background:var(--food)"></i>Food</span>
-      <span><i style="background:var(--ride)"></i>Ride</span>
-      <span><i style="background:var(--attr)"></i>Attraction</span>
-      <span><i style="background:var(--show)"></i>Don't miss</span>
+      <span><i style="background:#40c057"></i>Matt's interests</span>
+      <span><i style="background:linear-gradient(90deg,#1c7ed6,#74c0fc)"></i>Elizabeth's interests (each its own blue)</span>
     </div>
     <div id="lists"></div>
     <h2>Suggested order</h2>
@@ -388,7 +382,7 @@ function artOverlay(x0, y0, w, h, inner) {
 
 const lists = document.getElementById('lists');
 const MATT = '#40c057';                  // Matt's picks show green on the map once selected
-const BLUES = ['#4dabf7', '#1c7ed6', '#74c0fc', '#3bc9db', '#5c7cfa', '#a5d8ff', '#1971c2', '#66d9e8', '#748ffc', '#339af0', '#99e9f2', '#4263eb'];
+const randomBlue = () => `hsl(${195 + Math.round(Math.random() * 40)} ${70 + Math.round(Math.random() * 25)}% ${48 + Math.round(Math.random() * 26)}%)`;
 const pinIcon = (c, label) => L.divIcon({ className: '', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28],
   html: `<div class="pin" style="background:${c}"><span>${label}</span></div>` });
 let n = 0;
@@ -399,7 +393,7 @@ groups.forEach(g => {
   const ul = document.createElement('ul'); ul.className = 'stops'; lists.appendChild(ul);
   g.items.forEach(it => {
     n++;
-    const c = color(g.kind);
+    const c = MATT;
     const m = L.marker([H - it.y, it.x], { icon: pinIcon(c, n) }).addTo(map)
       .bindPopup(`<b>${it.name}</b>${it.likely ? ' <span class="tag">likely</span>' : ''}<br>${it.where}<br><small>Matt's interest</small>`);
     const li = document.createElement('li');
@@ -416,15 +410,14 @@ groups.forEach(g => {
 });
 
 // Elizabeth's interests: anything added from "Find more places". Each gets its own shade of blue.
-lists.insertAdjacentHTML('beforeend', `<h3 class="who"><i style="background:${BLUES[0]}"></i>Elizabeth's interests</h3>
+lists.insertAdjacentHTML('beforeend', `<h3 class="who"><i style="background:linear-gradient(90deg,#1c7ed6,#74c0fc)"></i>Elizabeth's interests</h3>
   <p class="where" id="eliz-empty">Nothing yet. Use <b>Find more places</b> at the bottom to add things.</p>
   <ul class="stops" id="eliz"></ul>`);
 const elizUl = document.getElementById('eliz');
 const eliz = [];                         // Elizabeth's entries, in the order she added them
-let shadeNext = 0;
-function addToEliz(p, andSelect = true) {
+function addToEliz(p, andSelect = true, shade) {
   if (!eliz.includes(p)) {
-    p.owner = 'eliz'; p.shade = BLUES[shadeNext++ % BLUES.length]; p.label = 'E';
+    p.owner = 'eliz'; p.shade = shade || randomBlue(); p.label = 'E';
     const li = document.createElement('li');
     li.innerHTML = `<span class="dot" style="background:${p.shade}; color:#10131a">E</span>
       <span><span class="name">${p.name}</span><br><span class="where">${p.group}${p.sub ? ' · ' + p.sub : ''}</span></span>
@@ -445,7 +438,7 @@ function dropFromEliz(p) {
   saveEliz(); refreshEliz(); renderResults();
 }
 function refreshEliz() { document.getElementById('eliz-empty').hidden = eliz.length > 0; }
-function saveEliz() { try { localStorage.setItem('elizInterests', JSON.stringify(eliz.map(p => p.key))); } catch (e) {} }
+function saveEliz() { try { localStorage.setItem('elizInterests', JSON.stringify(eliz.map(p => [p.key, p.shade]))); } catch (e) {} }
 
 // ---- Hover: a pulsing ring shows where an item is on the map ----
 const ring = L.marker([0, 0], { interactive: false, keyboard: false, zIndexOffset: 2000,
@@ -475,7 +468,6 @@ function select(e, fromList) {
   if (picked.includes(e)) { e.li && e.li.classList.remove('active'); e.m && e.m.closePopup(); remove(e); return; }
   picked.push(e);
   if (e.owner === 'eliz' && !e.m) addElizMarker(e);
-  else if (e.owner === 'matt') e.m.setIcon(pinIcon(MATT, e.label));
   drawRoute();
   focus(e, fromList);
 }
@@ -493,7 +485,6 @@ function focus(e, fly) {
 function remove(e) {
   picked.splice(picked.indexOf(e), 1);
   if (e.owner === 'eliz' && e.m) { e.m.remove(); e.m = null; }   // Elizabeth's picks only show while selected
-  if (e.owner === 'matt') e.m.setIcon(pinIcon(e.kindColor, e.label));
   unhighlight(e);
   drawRoute();
   renderResults();
@@ -668,8 +659,9 @@ chipsEl.onclick = ev => { const b = ev.target.closest('button'); if (!b) return;
 qBox.oninput = () => renderResults();
 fetch('places.json?v=1').then(r => r.json()).then(list => {
   PLACES = list.map((p, i) => ({ ...p, key: 'place' + i, extra: true, m: null }));
-  try { (JSON.parse(localStorage.getItem('elizInterests') || '[]')).forEach(k => {
-    const p = PLACES.find(x => x.key === k); if (p) addToEliz(p, false); }); } catch (e) {}
+  try { (JSON.parse(localStorage.getItem('elizInterests') || '[]')).forEach(item => {
+    const [k, shade] = Array.isArray(item) ? item : [item];
+    const p = PLACES.find(x => x.key === k); if (p) addToEliz(p, false, shade); }); } catch (e) {}
   renderResults();
 });
 function addElizMarker(e) {
