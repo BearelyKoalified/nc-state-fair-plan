@@ -149,7 +149,11 @@
   @media (max-width: 760px) { .nav-toggle { display: flex; } }
   .nav-toggle .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line); }
   .nav-toggle .what { color: var(--accent); font-weight: 600; font-size: 13px; white-space: nowrap; }
-  .mapkey .mk-sec { color: #a3acb9; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 8px 4px 2px; }
+  .mapkey .mk-sec { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%;
+    color: #a3acb9; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 8px 4px 4px; }
+  .mapkey .mk-sec:hover { color: #e6e9ee; }
+  .mapkey .mk-sec span { display: inline-block; font-size: 10px; transition: transform .15s; }
+  .mapkey .mk-sec[aria-expanded="false"] span { transform: rotate(-90deg); }
   .mapkey .mk-dot { width: 14px; height: 14px; border-radius: 50%; margin: 0 5px; flex: none; border: 1px solid #10131a; }
   .mapkey input:not(:checked) + .mk-dot { opacity: .35; }
 </style>
@@ -272,19 +276,33 @@ const KeyControl = L.Control.extend({
   onAdd() {
     const box = L.DomUtil.create('div', 'mapkey');
     box.innerHTML = `<div class="mk-top">
-        <button type="button" class="mk-head" aria-expanded="false"><span>▾</span> Map key</button>
+        <button type="button" class="mk-head" aria-expanded="true"><span>▾</span> Map key</button>
         <div class="mk-actions"><button type="button" data-all="1">Show all</button><button type="button" data-all="0">Hide all</button></div>
       </div>
-      <div class="mk-body" hidden>
-        <div class="mk-sec">Places on the map (dots)</div>
+      <div class="mk-body">
+        <button type="button" class="mk-sec" data-sec="dots" aria-expanded="true"><span>▾</span> Places on the map (dots)</button>
+        <div class="mk-group" data-group="dots">
         ${DOT_CATS.map(([c, col]) => `<label><input type="checkbox" data-cat="${c}"${hiddenCats.has(c) ? '' : ' checked'}>
           <span class="mk-dot" style="background:${col}"></span>${c}</label>`).join('')}
-        <div class="mk-sec">Map icons</div>
+        </div>
+        <button type="button" class="mk-sec" data-sec="icons" aria-expanded="false"><span>▾</span> Map icons</button>
+        <div class="mk-group" data-group="icons" hidden>
         ${KEY.map(([id, label]) => `<label><input type="checkbox" data-id="${id}"${hidden.has(id) ? '' : ' checked'}>
           <img src="key/${id}.png" alt="">${label}</label>`).join('')}
+        </div>
       </div>`;
     const head = box.querySelector('.mk-head'), body = box.querySelector('.mk-body');
-    head.onclick = () => { body.hidden = !body.hidden; head.setAttribute('aria-expanded', !body.hidden); };
+    const remember = (k, open) => { try { localStorage.setItem('key-' + k, open ? '1' : '0'); } catch (e) {} };
+    const recall = (k, dflt) => { try { const v = localStorage.getItem('key-' + k); return v === null ? dflt : v === '1'; } catch (e) { return dflt; } };
+    const setBody = open => { body.hidden = !open; head.setAttribute('aria-expanded', String(open)); remember('body', open); };
+    setBody(recall('body', true));
+    head.onclick = () => setBody(body.hidden);
+    box.querySelectorAll('.mk-sec').forEach(btn => {
+      const grp = box.querySelector(`[data-group="${btn.dataset.sec}"]`);
+      const set = open => { grp.hidden = !open; btn.setAttribute('aria-expanded', String(open)); remember(btn.dataset.sec, open); };
+      set(recall(btn.dataset.sec, btn.dataset.sec === 'dots'));
+      btn.onclick = () => set(grp.hidden);
+    });
     box.querySelectorAll('input[data-id]').forEach(cb => cb.onchange = () => setIcon(cb.dataset.id, cb.checked));
     box.querySelectorAll('input[data-cat]').forEach(cb => cb.onchange = () => setCat(cb.dataset.cat, cb.checked));
     box.querySelectorAll('[data-all]').forEach(b => b.onclick = () => {
