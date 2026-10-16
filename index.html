@@ -75,6 +75,20 @@
     aside .scroll { padding: 16px 16px 20px; }
     .route { padding: 2px 16px 12px; }
   }
+  .mapkey { background: rgba(28, 36, 48, .94); color: #e6e9ee; border: 1px solid #3a4455; border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.35); font: 13px/1.3 system-ui, sans-serif; width: 250px; max-width: calc(100vw - 32px); }
+  .mapkey .mk-head { all: unset; box-sizing: border-box; cursor: pointer; display: flex; justify-content: space-between;
+    width: 100%; padding: 9px 12px; font-weight: 700; font-size: 14px; }
+  .mapkey .mk-head[aria-expanded="false"] span { transform: rotate(-90deg); }
+  .mapkey .mk-body { padding: 0 8px 8px; max-height: calc(100vh - 140px); overflow-y: auto; }
+  .mapkey .mk-actions { display: flex; gap: 6px; padding: 0 4px 6px; }
+  .mapkey .mk-actions button { font: inherit; font-size: 12px; cursor: pointer; background: #2c3646; color: #e6e9ee;
+    border: 1px solid #3a4455; border-radius: 6px; padding: 3px 9px; }
+  .mapkey label { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 6px; cursor: pointer; }
+  .mapkey label:hover { background: rgba(255,255,255,.06); }
+  .mapkey input { accent-color: #4dabf7; margin: 0; }
+  .mapkey img { width: 24px; height: 24px; background: #e9edf3; border-radius: 6px; padding: 1px; flex: none; }
+  .mapkey input:not(:checked) + img { opacity: .4; }
 </style>
 </head>
 <body>
@@ -147,7 +161,50 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png?v=4', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=5', bounds).addTo(map);
+
+// ---- Map key: each kind of icon is its own layer that can be shown or hidden ----
+const KEY = [
+  ['numbered', 'Numbered attractions'], ['gates', 'Entry gates'], ['restrooms', 'Restrooms & changing tables'],
+  ['mothers', "Mothers' rooms"], ['concessions', 'Concession stands'], ['atm', 'ATMs'],
+  ['ticket_booth', 'Ticket booths'], ['ride_tickets', 'Ride ticket redemption'], ['tram', 'Tram ticket booths'],
+  ['first_aid', 'First aid'], ['schedules', 'Daily schedules'], ['wheelchair', 'Wheelchair & stroller rental'],
+  ['shopping', 'Shopping & merchandise'], ['public_address', 'Public address & reconnection'], ['music', 'Music'],
+];
+const iconLayers = {};
+let hidden = new Set();
+try { hidden = new Set(JSON.parse(localStorage.getItem('hiddenIcons') || '[]')); } catch (e) {}
+KEY.forEach(([id]) => {
+  iconLayers[id] = L.imageOverlay(`icons-${id}.png?v=1`, bounds, { interactive: false });
+  if (!hidden.has(id)) iconLayers[id].addTo(map);
+});
+function setIcon(id, on) {
+  on ? iconLayers[id].addTo(map) : iconLayers[id].remove();
+  on ? hidden.delete(id) : hidden.add(id);
+  try { localStorage.setItem('hiddenIcons', JSON.stringify([...hidden])); } catch (e) {}
+}
+const KeyControl = L.Control.extend({
+  options: { position: 'topright' },
+  onAdd() {
+    const box = L.DomUtil.create('div', 'mapkey');
+    const collapsed = window.innerWidth <= 760;
+    box.innerHTML = `<button type="button" class="mk-head" aria-expanded="${!collapsed}">Map key <span>▾</span></button>
+      <div class="mk-body"${collapsed ? ' hidden' : ''}>
+        <div class="mk-actions"><button type="button" data-all="1">Show all</button><button type="button" data-all="0">Hide all</button></div>
+        ${KEY.map(([id, label]) => `<label><input type="checkbox" data-id="${id}"${hidden.has(id) ? '' : ' checked'}>
+          <img src="key/${id}.png" alt="">${label}</label>`).join('')}
+      </div>`;
+    const head = box.querySelector('.mk-head'), body = box.querySelector('.mk-body');
+    head.onclick = () => { body.hidden = !body.hidden; head.setAttribute('aria-expanded', !body.hidden); };
+    box.querySelectorAll('input[data-id]').forEach(cb => cb.onchange = () => setIcon(cb.dataset.id, cb.checked));
+    box.querySelectorAll('[data-all]').forEach(b => b.onclick = () => box.querySelectorAll('input[data-id]').forEach(cb => {
+      cb.checked = b.dataset.all === '1'; setIcon(cb.dataset.id, cb.checked);
+    }));
+    L.DomEvent.disableClickPropagation(box); L.DomEvent.disableScrollPropagation(box);
+    return box;
+  },
+});
+new KeyControl().addTo(map);
 map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
 map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
 
@@ -281,7 +338,7 @@ function remove(e) {
 
 // Walking distances and paths between every pair of stops, precomputed along walkways and grass.
 let WALK = null;
-fetch('paths.json?v=2').then(r => r.json()).then(j => { WALK = j; drawRoute(); }).catch(() => {});
+fetch('paths.json?v=3').then(r => r.json()).then(j => { WALK = j; drawRoute(); }).catch(() => {});
 const dist = (a, b) => WALK ? WALK.dist[a.id - 1][b.id - 1] : Math.hypot(a.x - b.x, a.y - b.y);
 function leg(a, b) {                     // points from a to b, following paths when available
   const i = a.id - 1, j = b.id - 1;
