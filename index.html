@@ -140,7 +140,7 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png?v=2', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=3', bounds).addTo(map);
 map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
 map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
 
