@@ -140,7 +140,7 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=2', bounds).addTo(map);
 map.fitBounds([[H - 1200, 380], [H - 330, 1720]]);
 map.setMaxBounds([[-200, -200], [H + 200, W + 200]]);
 
@@ -194,7 +194,7 @@ function remove(e) {
 
 // Walking distances and paths between every pair of stops, precomputed along walkways and grass.
 let WALK = null;
-fetch('paths.json').then(r => r.json()).then(j => { WALK = j; drawRoute(); }).catch(() => {});
+fetch('paths.json?v=2').then(r => r.json()).then(j => { WALK = j; drawRoute(); }).catch(() => {});
 const dist = (a, b) => WALK ? WALK.dist[a.id - 1][b.id - 1] : Math.hypot(a.x - b.x, a.y - b.y);
 function leg(a, b) {                     // points from a to b, following paths when available
   const i = a.id - 1, j = b.id - 1;
