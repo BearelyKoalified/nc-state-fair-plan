@@ -411,13 +411,13 @@ groups.forEach(g => {
   g.items.forEach(it => {
     n++;
     const c = MATT;
-    const m = L.marker([H - it.y, it.x], { icon: pinIcon(c, n) }).addTo(map)
+    const m = L.marker([H - it.y, it.x], { icon: pinIcon(c, 'M') }).addTo(map)
       .bindPopup(`<b>${it.name}</b>${it.likely ? ' <span class="tag">likely</span>' : ''}<br>${it.where}<br><small>Matt's interest</small>`);
     const li = document.createElement('li');
-    li.innerHTML = `<span class="dot" style="background:${c}">${n}</span>
+    li.innerHTML = `<span class="dot" style="background:${c}">M</span>
       <span><span class="name">${it.name}</span>${it.likely ? '<span class="tag">likely</span>' : ''}
       <br><span class="where">${it.where}</span></span><span class="check" aria-hidden="true">✓</span>`;
-    const e = { key: 'plan' + n, owner: 'matt', label: n, kindColor: c, name: it.name, x: it.x, y: it.y, li, m };
+    const e = { key: 'plan' + n, owner: 'matt', label: 'M', kindColor: c, name: it.name, x: it.x, y: it.y, li, m };
     li.onclick = () => select(e, true);
     m.on('click', () => select(e, false));
     hoverable(li, e);
