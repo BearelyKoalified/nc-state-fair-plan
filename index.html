@@ -161,7 +161,7 @@ const groups = [
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 1.5, zoomSnap: 0.25,
   attributionControl: false });
 const bounds = [[0, 0], [H, W]];
-L.imageOverlay('fair-map-dark.png?v=6', bounds).addTo(map);
+L.imageOverlay('fair-map-dark.png?v=7', bounds).addTo(map);
 
 // ---- Map key: each kind of icon is its own layer that can be shown or hidden ----
 const KEY = [
@@ -281,6 +281,26 @@ function artOverlay(x0, y0, w, h, inner) {
            keySplines="${Array(keyTimes.split(';').length - 1).fill('.45 0 .55 1').join(';')}"/>
         <image href="animals/${name}.png?v=1" x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"/></g>`);
   });
+})();
+
+// State Fair Flyer: gondolas glide along the cable from Wilbur Terminus to Orville Terminus.
+(() => {
+  const [ax, ay] = [1358, 888], [bx, by] = [2141, 1206];      // terminus centres (art pixels)
+  const N = 9, dur = 48;                                       // gondolas on the cable, seconds per trip
+  let cars = '';
+  for (let k = 0; k < N; k++) {
+    const t = `dur="${dur}s" begin="${(-k * dur / N).toFixed(2)}s" repeatCount="indefinite"`;
+    cars += `<g opacity="0">
+      <animateMotion path="M${ax} ${ay}L${bx} ${by}" ${t}/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.04;.96;1" ${t}/>
+      <g><animateTransform attributeName="transform" type="rotate" values="-4 0 0;4 0 0;-4 0 0" dur="3.2s" begin="${-k * .7}s" repeatCount="indefinite"/>
+        <image href="animals/gondola3.png?v=1" x="-27.8" y="-7" width="42" height="47"/></g></g>`;
+  }
+  artOverlay(1330, 860, 850, 400, `
+    <line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#9aa5b8" stroke-width="2.4" stroke-linecap="round"/>
+    ${cars}
+    <circle cx="${ax}" cy="${ay}" r="13" fill="#283e96" stroke="#9aa5b8" stroke-width="2"/>
+    <circle cx="${bx}" cy="${by}" r="13" fill="#283e96" stroke="#9aa5b8" stroke-width="2"/>`);
 })();
 
 // Fireworks over the pond: staggered bursts that bloom and fade.
