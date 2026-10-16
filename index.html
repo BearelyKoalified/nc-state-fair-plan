@@ -140,7 +140,7 @@
   h3.who .fold[aria-expanded="false"] .chev { transform: rotate(-90deg); }
   h3.who .count { color: var(--muted); font-weight: 400; font-size: 14px; }
   .leaflet-tooltip.dot-label { background: rgba(23, 22, 26, .78); color: #e9ecef; border: 0; box-shadow: none;
-    padding: 1px 5px; font: 600 11px/1.3 system-ui, sans-serif; border-radius: 4px; }
+    padding: 1px 5px; font: 600 11px/1.3 system-ui, sans-serif; border-radius: 4px; white-space: nowrap; pointer-events: none; }
   .leaflet-tooltip.dot-label::before { display: none; }
   .dot-key { margin: 4px 0 2px; }
   .dot-hint { margin: 0 0 8px; font-size: 12.5px; }
@@ -816,12 +816,15 @@ function renderResults() {
 })();
 
 // ---- Place dots: where everything in "Find more places" is, without pins ----
-// Search or a filter chip shows just the matches; otherwise detail grows with zoom:
-// zoomed out = nothing, normal = faint dots, close = bigger dots with names.
+// Search or a filter chip shows just the matches (named); otherwise detail grows with zoom:
+// zoomed out = nothing, normal = faint dots, closer = names wherever they fit without overlapping.
+// Phones start much further out, so their thresholds are lower.
 const DOT_COLORS = { 'Attractions': '#fcc419', 'New foods': '#ff922b', 'Services': '#63e6be', 'Places': '#dee2e6', 'Gates': '#b197fc' };
-const ZOOM_DOTS = -0.25, ZOOM_LABELS = 1;
+const LABEL_ORDER = ['Attractions', 'Places', 'Gates', 'Services', 'New foods'];   // who gets label space first
+const zoomSteps = () => window.innerWidth <= 760 ? { dots: -2, labels: -1.25 } : { dots: -0.25, labels: 0.5 };
 const dotRenderer = L.canvas({ padding: 0.5 });
 const dotLayer = L.layerGroup().addTo(map);
+const shortName = p => p.name.replace(/^\d+\. /, '').split(',')[0].replace(/ \(.*\)$/, '');
 function placeMatches() {
   const words = qBox.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return PLACES.filter(p => (group === 'All' || p.group === group) &&
@@ -831,17 +834,30 @@ function updateDots() {
   dotLayer.clearLayers();
   if (!PLACES.length) return;
   const searching = qBox.value.trim() !== '' || group !== 'All';
-  const z = map.getZoom();
-  if (!searching && z < ZOOM_DOTS) return;
-  const labels = z >= ZOOM_LABELS;
-  const base = searching ? { r: 6, op: 0.95 } : labels ? { r: 5, op: 0.85 } : { r: 3.5, op: 0.55 };
-  (searching ? placeMatches() : PLACES).forEach(p => {
-    if (picked.includes(p)) return;                         // selected places already have a pin
+  const z = map.getZoom(), steps = zoomSteps();
+  if (!searching && z < steps.dots) return;
+  const labels = searching || z >= steps.labels;
+  const base = searching ? { r: 6, op: 0.95 } : labels ? { r: 4.5, op: 0.85 } : { r: 3.5, op: 0.6 };
+  const list = (searching ? placeMatches() : PLACES).filter(p => !picked.includes(p));   // selected places have a pin
+  // greedy label placement in screen space: higher-priority groups first, skip any name that would overlap
+  const named = new Set();
+  if (labels) {
+    const boxes = [], hit = (r) => boxes.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
+    const dotsPx = list.map(p => map.latLngToLayerPoint([H - p.y, p.x]));
+    [...list].sort((p, q) => LABEL_ORDER.indexOf(p.group) - LABEL_ORDER.indexOf(q.group)).forEach(p => {
+      const pt = map.latLngToLayerPoint([H - p.y, p.x]), w = shortName(p).length * 6.1 + 12;
+      const r = [pt.x + 5, pt.y - 9, pt.x + 5 + w, pt.y + 9];
+      // keep names off other dots too, so dots stay visible
+      if (hit(r) || dotsPx.some(d => d.x > r[0] && d.x < r[2] && d.y > r[1] && d.y < r[3] && !(d.x === pt.x && d.y === pt.y))) return;
+      boxes.push(r); named.add(p);
+    });
+  }
+  list.forEach(p => {
     const c = DOT_COLORS[p.group] || '#dee2e6';
     const dot = L.circleMarker([H - p.y, p.x], { renderer: dotRenderer, radius: base.r, color: '#10131a', weight: 1,
       fillColor: c, fillOpacity: base.op, opacity: base.op });
     const tip = `<b>${p.name}</b>${p.sub ? '<br>' + p.sub : ''}<br><small>Tap to add to Elizabeth's interests</small>`;
-    if (labels) dot.bindTooltip(p.name.replace(/^\d+\. /, '').split(',')[0], { permanent: true, direction: 'right', offset: [6, 0], className: 'dot-label' });
+    if (named.has(p)) dot.bindTooltip(shortName(p), { permanent: true, direction: 'right', offset: [5, 0], className: 'dot-label' });
     else dot.bindTooltip(tip, { direction: 'top', offset: [0, -6] });
     dot.on('mouseover', () => dot.setStyle({ radius: base.r + 3, fillOpacity: 1, opacity: 1 }));
     dot.on('mouseout', () => dot.setStyle({ radius: base.r, fillOpacity: base.op, opacity: base.op }));
